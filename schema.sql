@@ -28,3 +28,21 @@ CREATE TABLE carts (
     price REAL,
     quantity INTEGER
 );
+
+DROP TABLE IF EXISTS order_history;
+CREATE TABLE order_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    device_id TEXT,
+    store_id TEXT,
+    total REAL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS order_items;
+CREATE TABLE order_items (
+    order_id INTEGER,
+    name TEXT,
+    price REAL,
+    quantity INTEGER,
+    FOREIGN KEY(order_id) REFERENCES order_history(id)
+);

@@ -64,7 +64,7 @@ export async function onRequest(context) {
         // --- MULTI-STORE ROUTING ---
         const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
         if (!session) {
-            return new Response(JSON.stringify({ status: "error", error: "Please scan a Store Check-In Barcode first!" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return new Response(JSON.stringify({ status: "error", error: "Please scan a Store Check-In Barcode first!" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
         const storeId = session.store_id;
 
@@ -83,9 +83,9 @@ export async function onRequest(context) {
             } catch (e) {}
 
             if (globalName !== "Unknown Product") {
-                return new Response(JSON.stringify({ status: "error", error: `Found '${globalName.substring(0, 20)}...', but Store '${storeId}' hasn't set a price.` }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                return new Response(JSON.stringify({ status: "error", error: `Found '${globalName.substring(0, 20)}...', but Store '${storeId}' hasn't set a price.` }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
             } else {
-                return new Response(JSON.stringify({ status: "error", error: "Barcode not recognized locally or globally." }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                return new Response(JSON.stringify({ status: "error", error: "Barcode not recognized locally or globally." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
             }
         }
 
