@@ -98,9 +98,9 @@ export async function onRequest(context) {
         }
 
         const { results: cartItems } = await env.DB.prepare("SELECT price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
-        let total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        let total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
         
-        return new Response(JSON.stringify({ status: "success", productName: product.name, price: product.price.toFixed(2), cartTotal: total }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ status: "success", productName: product.name, price: product.price ? product.price.toFixed(2) : "0.00", cartTotal: total }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       if (request.method === "POST" && url.pathname === "/api/cart/create-checkout-session") {
@@ -113,9 +113,12 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ error: "Cart is empty" }), { status: 400, headers: corsHeaders });
         }
 
-        // Fetch Stripe Key from D1
+        // --- MULTI-STORE STRIPE PAYMENTS ---
         const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
-        const storeId = session ? session.store_id : null;
+        if (!session) {
+            return new Response(JSON.stringify({ error: "No active store session. Please scan a Store Check-In barcode." }), { status: 400, headers: corsHeaders });
+        }
+        const storeId = session.store_id;
         
         const store = await env.DB.prepare("SELECT stripe_key FROM stores WHERE store_id = ?").bind(storeId).first();
         let storeStripeKey = store ? store.stripe_key : env.STRIPE_SECRET_KEY;
@@ -132,7 +135,7 @@ export async function onRequest(context) {
         cartItems.forEach((item, index) => {
             stripeParams.append(`line_items[${index}][price_data][currency]`, 'usd');
             stripeParams.append(`line_items[${index}][price_data][product_data][name]`, item.name);
-            stripeParams.append(`line_items[${index}][price_data][unit_amount]`, Math.round(item.price * 100)); // Stripe uses cents
+            stripeParams.append(`line_items[${index}][price_data][unit_amount]`, Math.round((item.price || 0) * 100)); // Stripe uses cents
             stripeParams.append(`line_items[${index}][quantity]`, item.quantity);
         });
 
