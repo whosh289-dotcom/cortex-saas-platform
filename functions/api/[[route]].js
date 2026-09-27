@@ -158,8 +158,53 @@ export async function onRequest(context) {
         const deviceId = body.deviceId;
         if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
 
-        await env.DB.prepare("DELETE FROM carts WHERE device_id = ?").bind(deviceId).run();
+        const { results: cartItems } = await env.DB.prepare("SELECT name, price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
+        if (cartItems.length > 0) {
+            let total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
+            
+            // Get store_id
+            const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
+            const storeId = session ? session.store_id : "unknown";
+
+            // Save order history
+            const { meta } = await env.DB.prepare("INSERT INTO order_history (device_id, store_id, total) VALUES (?, ?, ?)")
+                                         .bind(deviceId, storeId, total).run();
+            
+            // Note: Since D1 doesn't easily return last_insert_rowid in a single run() via JS binding without batching,
+            // and because SQLite's last_insert_rowid() is connection specific, we'll fetch the latest ID.
+            const lastOrder = await env.DB.prepare("SELECT id FROM order_history WHERE device_id = ? ORDER BY id DESC LIMIT 1").bind(deviceId).first();
+            const orderId = lastOrder.id;
+
+            for (const item of cartItems) {
+                await env.DB.prepare("INSERT INTO order_items (order_id, name, price, quantity) VALUES (?, ?, ?, ?)").bind(orderId, item.name, item.price, item.quantity).run();
+            }
+
+            // Finally, clear the cart
+            await env.DB.prepare("DELETE FROM carts WHERE device_id = ?").bind(deviceId).run();
+        }
+        
         return new Response(JSON.stringify({ status: "success" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Add API endpoint to fetch history so history.html works!
+      if (request.method === "GET" && url.pathname === "/api/history") {
+        const deviceId = url.searchParams.get("deviceId");
+        if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
+
+        const { results: orders } = await env.DB.prepare("SELECT * FROM order_history WHERE device_id = ? ORDER BY timestamp DESC LIMIT 10").bind(deviceId).all();
+        
+        let formattedOrders = [];
+        for (let order of orders) {
+             const { results: items } = await env.DB.prepare("SELECT name, price, quantity FROM order_items WHERE order_id = ?").bind(order.id).all();
+             formattedOrders.push({
+                 id: order.id,
+                 date: order.timestamp,
+                 storeId: order.store_id,
+                 total: order.total,
+                 items: items
+             });
+        }
+        return new Response(JSON.stringify(formattedOrders), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       return new Response("Not Found", { status: 404, headers: corsHeaders });
