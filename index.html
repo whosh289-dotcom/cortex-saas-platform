@@ -83,7 +83,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ storeId, stripeKey })
                 });
-                if(res.ok) alert("Store Settings Saved successfully to Cloudflare KV!");
+                if(res.ok) alert("Store Settings Saved successfully!");
                 else alert("Error saving settings.");
             } catch(e) { alert("Network error."); }
         }
