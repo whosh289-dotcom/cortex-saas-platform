@@ -5,4 +5,4 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "cortex-db"
-database_id = "REPLACE_WITH_YOUR_D1_ID"
+database_id = "f5c3d8f4-14bc-43a5-9d15-649ba3849bdd"
