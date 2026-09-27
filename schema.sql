@@ -10,6 +10,7 @@ CREATE TABLE products (
     store_id TEXT,
     name TEXT,
     price REAL,
+    stock INTEGER DEFAULT 0,
     PRIMARY KEY (barcode, store_id)
 );
 

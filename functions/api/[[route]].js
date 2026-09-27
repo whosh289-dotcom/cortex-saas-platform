@@ -26,9 +26,9 @@ export async function onRequest(context) {
 
       if (request.method === "POST" && url.pathname === "/api/admin/catalog") {
           const body = await request.json();
-          if (body.storeId && body.barcode && body.name && body.price !== undefined) {
-              await env.DB.prepare("INSERT INTO products (barcode, store_id, name, price) VALUES (?, ?, ?, ?) ON CONFLICT(barcode, store_id) DO UPDATE SET name = excluded.name, price = excluded.price")
-                  .bind(body.barcode, body.storeId, body.name, body.price).run();
+          if (body.storeId && body.barcode && body.name && body.price !== undefined && body.stock !== undefined) {
+              await env.DB.prepare("INSERT INTO products (barcode, store_id, name, price, stock) VALUES (?, ?, ?, ?, ?) ON CONFLICT(barcode, store_id) DO UPDATE SET name = excluded.name, price = excluded.price, stock = excluded.stock")
+                  .bind(body.barcode, body.storeId, body.name, body.price, body.stock).run();
               return new Response(JSON.stringify({ status: "success" }), { headers: corsHeaders });
           }
           return new Response("Bad Request", { status: 400, headers: corsHeaders });
@@ -69,7 +69,10 @@ export async function onRequest(context) {
         const storeId = session.store_id;
 
         // Lookup product in D1
-        let product = await env.DB.prepare("SELECT name, price FROM products WHERE barcode = ? AND store_id = ?").bind(barcode, storeId).first();
+        let product = await env.DB.prepare("SELECT name, price, stock FROM products WHERE barcode = ? AND store_id = ?").bind(barcode, storeId).first();
+        if (product && product.stock <= 0) {
+            return new Response(JSON.stringify({ status: "error", error: "Product out of stock" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
         
         // Global UPC Fallback
         if (!product) {
@@ -158,7 +161,7 @@ export async function onRequest(context) {
         const deviceId = body.deviceId;
         if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
 
-        const { results: cartItems } = await env.DB.prepare("SELECT name, price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
+        const { results: cartItems } = await env.DB.prepare("SELECT barcode, name, price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
         if (cartItems.length > 0) {
             let total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
             
@@ -177,6 +180,8 @@ export async function onRequest(context) {
 
             for (const item of cartItems) {
                 await env.DB.prepare("INSERT INTO order_items (order_id, name, price, quantity) VALUES (?, ?, ?, ?)").bind(orderId, item.name, item.price, item.quantity).run();
+                // Decrement stock for the sold product
+                await env.DB.prepare("UPDATE products SET stock = stock - ? WHERE barcode = ? AND store_id = ?").bind(item.quantity, item.barcode, storeId).run();
             }
 
             // Finally, clear the cart

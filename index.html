@@ -80,18 +80,22 @@
                     
                     <p class="text-sm text-gray-600 mb-6 font-medium">Add local inventory. (Requires Store ID to be set first).</p>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                        <div class="sm:col-span-1">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                        <div>
                             <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">UPC Barcode</label>
                             <input type="text" id="prod-barcode" placeholder="041331092609" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
                         </div>
-                        <div class="sm:col-span-1">
+                        <div>
                             <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Product Name</label>
                             <input type="text" id="prod-name" placeholder="Water 20oz" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
                         </div>
-                        <div class="sm:col-span-1">
+                        <div>
                             <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Price (USD)</label>
                             <input type="number" step="0.01" id="prod-price" placeholder="3.99" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Stock Qty</label>
+                            <input type="number" id="prod-stock" placeholder="100" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
                         </div>
                     </div>
                     <div class="flex justify-end mt-6">
@@ -150,6 +154,7 @@
             const barcode = document.getElementById('prod-barcode').value.trim();
             const name = document.getElementById('prod-name').value.trim();
             const price = parseFloat(document.getElementById('prod-price').value);
+            const stock = parseInt(document.getElementById('prod-stock').value) || 0;
             
             if(!storeId) return alert("Please enter your Store ID at the top first.");
             if(!barcode || !name || isNaN(price)) return alert("Please fill out all product fields.");
@@ -158,13 +163,14 @@
                 const res = await fetch(API_URL + '/catalog', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ storeId, barcode, name, price })
+                    body: JSON.stringify({ storeId, barcode, name, price, stock })
                 });
                 if(res.ok) {
-                    alert(`Added ${name} to ${storeId} catalog!`);
+                    alert(`Added ${name} (Stock: ${stock}) to ${storeId} catalog!`);
                     document.getElementById('prod-barcode').value = "";
                     document.getElementById('prod-name').value = "";
                     document.getElementById('prod-price').value = "";
+                    document.getElementById('prod-stock').value = "";
                 } else alert("Error adding product.");
             } catch(e) { alert("Network error."); }
         }
