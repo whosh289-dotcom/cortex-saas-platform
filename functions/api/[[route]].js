@@ -187,6 +187,25 @@ export async function onRequest(context) {
       }
 
       // Add API endpoint to fetch history so history.html works!
+      if (request.method === "POST" && url.pathname === "/api/band/pair") {
+        const body = await request.json();
+        if(!body.deviceId) return new Response("Missing deviceId", { status: 400, headers: corsHeaders });
+        
+        await env.DB.prepare("INSERT OR REPLACE INTO active_sessions (device_id, store_id) VALUES (?, 'PENDING')").bind(body.deviceId).run();
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/band/status") {
+        const deviceId = url.searchParams.get("deviceId");
+        if(!deviceId) return new Response("Missing deviceId", { status: 400, headers: corsHeaders });
+        
+        const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
+        if (session) {
+            return new Response(JSON.stringify({ paired: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        return new Response(JSON.stringify({ paired: false }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       if (request.method === "GET" && url.pathname === "/api/history") {
         const deviceId = url.searchParams.get("deviceId");
         if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
