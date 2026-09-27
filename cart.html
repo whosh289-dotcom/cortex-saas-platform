@@ -195,12 +195,12 @@
                 });
                 
                 // Clean up the URL so it doesn't trigger again on refresh
-                window.history.replaceState({}, document.title, "/index.html");
+                window.history.replaceState({}, document.title, "/cart.html");
                 fetchCart();
             }
             if (urlParams.get('canceled') === 'true') {
                 alert("Payment was canceled.");
-                window.history.replaceState({}, document.title, "/index.html");
+                window.history.replaceState({}, document.title, "/cart.html");
             }
         });
         
