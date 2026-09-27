@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cortex Platform - Store Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
@@ -13,100 +13,112 @@
 <body class="bg-gray-100 min-h-screen text-gray-900 antialiased">
 
     <!-- Top Navigation -->
-    <nav class="bg-blue-800 border-b-4 border-blue-900 px-6 py-4 sticky top-0 z-50 shadow-md">
-        <div class="max-w-5xl mx-auto flex justify-between items-center text-white">
-            <div class="flex items-center gap-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                <h1 class="text-xl font-bold tracking-wide uppercase">Cortex Platform</h1>
-                <!-- 4. Store History -->
-        <div class="bg-gray-200 p-8 border-2 border-gray-300 shadow-sm relative mt-12 mb-12">
-            <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">4. Store Order History</div>
-            
-            <p class="text-sm text-gray-700 mb-6 mt-4 font-medium">View all receipts processed through your store terminal.</p>
-            
-            <button onclick="loadStoreHistory()" class="mb-6 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors border-2 border-blue-900 rounded-none w-full md:w-auto">
-                Load Store Receipts
-            </button>
-
-            <div id="admin-history-list" class="space-y-4">
+    <nav class="bg-blue-800 border-b-4 border-blue-900 px-4 md:px-8 py-4 sticky top-0 z-50 shadow-md">
+        <div class="w-full flex justify-between items-center text-white">
+            <div class="flex items-center gap-3">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                <h1 class="text-xl md:text-2xl font-black tracking-widest uppercase">Cortex Platform</h1>
             </div>
-        </div>
-
-    </div>
-            <span class="text-xs font-bold bg-white text-blue-900 px-3 py-1 uppercase tracking-widest border-2 border-blue-900">Admin</span>
+            <span class="text-xs font-bold bg-white text-blue-900 px-4 py-1.5 uppercase tracking-widest border-2 border-blue-900 shadow-sm hidden md:block">Store Admin Console</span>
         </div>
     </nav>
     
-    <div class="max-w-5xl mx-auto p-6 mt-4 space-y-8">
+    <div class="w-full max-w-[1600px] mx-auto p-4 md:p-8 mt-4">
         
-        <!-- Header -->
-        <div class="mb-8 border-l-4 border-blue-700 pl-4">
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 uppercase">Store Configuration</h2>
-            <p class="text-base text-gray-600 mt-1">Manage your terminal settings and product catalog.</p>
+        <div class="mb-10 border-l-8 border-blue-700 pl-5">
+            <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900 uppercase">Dashboard</h2>
+            <p class="text-base font-medium text-gray-600 mt-2 uppercase tracking-wide">Manage your terminal settings, inventory, and history.</p>
         </div>
 
-        <!-- 1. Store Config -->
-        <div class="bg-white p-8 border-2 border-gray-300 shadow-sm relative">
-            <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">1. Terminal Setup</div>
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-10">
             
-            <p class="text-sm text-gray-600 mb-6 mt-4">Link your physical store to your Stripe account for payment processing.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Store ID</label>
-                    <input type="text" id="store-id" placeholder="e.g. jfk-terminal-4" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
+            <!-- LEFT COLUMN (Settings & Barcode) -->
+            <div class="xl:col-span-4 space-y-10">
+                
+                <!-- 1. Store Config -->
+                <div class="bg-white p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
+                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">1. Terminal Setup</div>
+                    
+                    <p class="text-sm text-gray-600 mb-6 font-medium">Link your physical store to your Stripe account.</p>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Store ID</label>
+                            <input type="text" id="store-id" placeholder="e.g. jfk-terminal-4" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Stripe Secret Key</label>
+                            <input type="password" id="stripe-key" placeholder="sk_live_..." class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
+                        </div>
+                        <button onclick="saveStoreConfig()" class="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-4 uppercase tracking-widest transition-colors border-2 border-blue-900 rounded-none mt-2">
+                            Save Config
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Stripe Secret Key</label>
-                    <input type="password" id="stripe-key" placeholder="sk_live_..." class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
+
+                <!-- 2. Check-In -->
+                <div class="bg-gray-200 p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
+                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">2. Check-In Barcode</div>
+                    
+                    <p class="text-sm text-gray-700 mb-6 font-medium">Print this barcode at your entrance. Shoppers must scan this to sync their band.</p>
+                    
+                    <button onclick="generateCheckIn()" class="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-400 text-sm font-bold py-4 uppercase tracking-widest transition-colors rounded-none mb-6">
+                        Generate Code
+                    </button>
+                    <div id="barcode-container" class="hidden bg-white p-6 border-2 border-gray-800 flex justify-center w-full rounded-none">
+                        <svg id="checkin-barcode-svg" class="w-full max-w-xs"></svg>
+                    </div>
                 </div>
             </div>
-            <button onclick="saveStoreConfig()" class="mt-6 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors border-2 border-blue-900 rounded-none">
-                Save Configuration
-            </button>
-        </div>
 
-        <!-- 2. Catalog -->
-        <div class="bg-white p-8 border-2 border-gray-300 shadow-sm relative mt-12">
-            <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">2. Product Catalog</div>
-            
-            <p class="text-sm text-gray-600 mb-6 mt-4">Add local inventory. (Requires Store ID to be set above).</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">UPC Barcode</label>
-                    <input type="text" id="prod-barcode" placeholder="041331092609" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
+            <!-- RIGHT COLUMN (Catalog & History) -->
+            <div class="xl:col-span-8 space-y-10">
+                
+                <!-- 3. Catalog -->
+                <div class="bg-white p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
+                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">3. Product Catalog</div>
+                    
+                    <p class="text-sm text-gray-600 mb-6 font-medium">Add local inventory. (Requires Store ID to be set first).</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <div class="sm:col-span-1">
+                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">UPC Barcode</label>
+                            <input type="text" id="prod-barcode" placeholder="041331092609" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
+                        </div>
+                        <div class="sm:col-span-1">
+                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Product Name</label>
+                            <input type="text" id="prod-name" placeholder="Water 20oz" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
+                        </div>
+                        <div class="sm:col-span-1">
+                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Price (USD)</label>
+                            <input type="number" step="0.01" id="prod-price" placeholder="3.99" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button onclick="addProduct()" class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-4 px-10 uppercase tracking-widest transition-colors border-2 border-blue-900 rounded-none">
+                            Add to Catalog
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Product Name</label>
-                    <input type="text" id="prod-name" placeholder="Premium Water 20oz" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
+
+                <!-- 4. Store History -->
+                <div class="bg-gray-200 p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
+                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">4. Store Order History</div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <p class="text-sm text-gray-700 font-medium max-w-md">View all receipts processed through your store terminal.</p>
+                        <button onclick="loadStoreHistory()" class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors border-2 border-blue-900 rounded-none shrink-0">
+                            Load Receipts
+                        </button>
+                    </div>
+
+                    <div id="admin-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="col-span-full text-center font-bold text-gray-500 uppercase tracking-widest border-2 border-dashed border-gray-400 py-12 bg-gray-100">Click load to view history</div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Price (USD)</label>
-                    <input type="number" step="0.01" id="prod-price" placeholder="3.99" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
-                </div>
+
             </div>
-            <button onclick="addProduct()" class="mt-6 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors border-2 border-blue-900 w-full md:w-auto rounded-none">
-                Add to Catalog
-            </button>
         </div>
-
-        <!-- 3. Check-In -->
-        <div class="bg-gray-200 p-8 border-2 border-gray-300 shadow-sm relative mt-12 mb-12">
-            <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">3. Door Check-In Barcode</div>
-            
-            <p class="text-sm text-gray-700 mb-6 mt-4 font-medium">Print this barcode and place it at your entrance. Shoppers must scan this to sync their band to your local pricing.</p>
-            
-            <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
-                <button onclick="generateCheckIn()" class="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-400 text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors h-fit rounded-none">
-                    Generate Printable Barcode
-                </button>
-                <div id="barcode-container" class="hidden bg-white p-4 border-2 border-gray-800 flex justify-center w-full md:w-auto rounded-none">
-                    <svg id="checkin-barcode-svg"></svg>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <!-- Load JsBarcode for visual barcode generation -->
@@ -114,6 +126,7 @@
 
     <script>
         const API_URL = '/api/admin';
+        const BASE_API = '/api';
 
         async function saveStoreConfig() {
             const storeId = document.getElementById('store-id').value.trim();
@@ -172,15 +185,17 @@
                 displayValue: true,
                 font: "monospace",
                 fontSize: 16,
-                fontWeight: "bold"
+                fontWeight: "bold",
+                margin: 0
             });
         }
+
         async function loadStoreHistory() {
             const storeId = document.getElementById('store-id').value.trim();
             if(!storeId) return alert("Please enter your Store ID at the top first.");
 
             const list = document.getElementById('admin-history-list');
-            list.innerHTML = '<div class="text-center font-bold text-gray-600">Loading...</div>';
+            list.innerHTML = '<div class="col-span-full text-center font-bold text-gray-800 border-2 border-gray-400 bg-white py-12 uppercase tracking-widest">Loading...</div>';
 
             try {
                 const res = await fetch(API_URL + '/history?storeId=' + storeId);
@@ -188,40 +203,40 @@
                 const history = await res.json();
                 
                 if(!history || history.length === 0) {
-                    list.innerHTML = '<div class="text-center font-bold text-gray-600 border-2 border-gray-300 bg-white py-6">No past orders found.</div>';
+                    list.innerHTML = '<div class="col-span-full text-center font-bold text-gray-500 border-2 border-dashed border-gray-400 py-12 uppercase tracking-widest">No past orders found.</div>';
                     return;
                 }
                 
                 list.innerHTML = history.map(order => {
                     const dateObj = new Date(order.date);
-                    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+                    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
                     
                     const itemsHtml = order.items.map(i => `
-                        <div class="flex justify-between py-1 text-sm border-b border-gray-200 last:border-0">
-                            <span class="text-gray-800 font-bold uppercase">${i.quantity}x ${i.name}</span> 
+                        <div class="flex justify-between py-1.5 text-sm border-b border-gray-200 last:border-0">
+                            <span class="text-gray-800 font-bold uppercase"><span class="text-blue-700 mr-1">${i.quantity}X</span> ${i.name}</span> 
                             <span class="text-gray-900 font-black">$${(i.price * i.quantity).toFixed(2)}</span>
                         </div>
                     `).join('');
 
                     return `
-                    <div class="bg-white border-2 border-gray-300 p-4">
-                        <div class="flex justify-between items-center mb-3 border-b-2 border-gray-800 pb-2">
-                            <span class="bg-gray-800 text-white px-2 py-1 text-xs font-bold uppercase">Order #${order.id}</span>
-                            <span class="text-xs text-gray-600 font-bold uppercase tracking-wider">Device: ${order.deviceId}</span>
+                    <div class="bg-white border-2 border-gray-300 p-5 relative">
+                        <div class="flex justify-between items-center mb-4 border-b-2 border-gray-800 pb-3">
+                            <span class="bg-gray-800 text-white px-2 py-1 text-xs font-bold uppercase tracking-wider">ORD #${order.id}</span>
+                            <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest bg-gray-100 px-2 border border-gray-300">DEV: ${order.deviceId}</span>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-4">
                             ${itemsHtml}
                         </div>
-                        <div class="flex justify-between items-center pt-2">
-                            <span class="text-xs font-bold text-gray-600 uppercase">Paid on ${dateStr}</span>
-                            <span class="font-black text-lg text-green-700">$${order.total.toFixed(2)}</span>
+                        <div class="flex justify-between items-center pt-3 bg-gray-100 -mx-5 -mb-5 px-5 pb-4 border-t-2 border-gray-300 mt-2">
+                            <span class="text-xs font-bold text-gray-600 uppercase tracking-widest">${dateStr}</span>
+                            <span class="font-black text-xl text-green-700">$${order.total.toFixed(2)}</span>
                         </div>
                     </div>
                     `;
                 }).join('');
                 
             } catch (err) {
-                list.innerHTML = '<div class="text-red-600 text-center py-4 font-bold uppercase">Error loading history.</div>';
+                list.innerHTML = '<div class="col-span-full text-red-600 text-center py-8 font-bold uppercase border-2 border-red-600 bg-red-50">Error loading history.</div>';
             }
         }
     </script>
