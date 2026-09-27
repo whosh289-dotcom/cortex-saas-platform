@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortex Band - Smart Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+    
+    <!-- Responsive App Container -->
+    <div class="w-full md:max-w-3xl lg:max-w-5xl mx-auto bg-white min-h-screen shadow-2xl flex flex-col relative">
+        
+        <!-- Header -->
+        <div class="bg-blue-600 text-white p-4 md:p-6 flex justify-between items-center shadow-md z-10">
+            <div class="flex items-center gap-3">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <h1 class="text-xl md:text-3xl font-bold tracking-wide">Cortex Band</h1>
+            </div>
+            <div class="flex items-center gap-2 md:gap-3">
+                <a href="setup.html" class="text-white hover:text-blue-200 transition p-1" title="Setup Guide">
+                    <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </a>
+                <button onclick="document.getElementById('pair-modal').classList.remove('hidden')" class="bg-blue-500 hover:bg-blue-400 px-3 py-2 rounded-md text-sm md:text-base font-bold shadow-inner transition">
+                    Pair Band
+                </button>
+            </div>
+        </div>
+
+        <!-- Cart Section -->
+        <div class="flex-grow p-4 md:p-8 overflow-y-auto bg-gray-50 pb-32 md:pb-36">
+            <div class="flex justify-between items-end mb-4 border-b pb-2">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Your Cart</h2>
+                <span id="item-count" class="text-gray-500 font-medium text-lg">0 items</span>
+            </div>
+
+            <!-- Cart Items -->
+            <div id="cart-items" class="space-y-3 md:space-y-4">
+                <div class="text-center text-gray-400 py-16 flex flex-col items-center">
+                    <p>Loading cart...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total and Checkout (Sticky Bottom) -->
+        <div class="absolute bottom-16 md:bottom-20 w-full border-t border-gray-200 bg-white p-4 md:p-6 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+            <div class="flex justify-between items-center mb-4 text-2xl md:text-3xl font-black text-gray-800">
+                <span>Total</span>
+                <span id="cart-total" class="text-blue-600">$0.00</span>
+            </div>
+            <button id="checkout-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 md:py-5 px-4 rounded-xl shadow-lg transition-transform transform hover:scale-[1.01] active:scale-95 flex justify-center items-center gap-2 text-lg md:text-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Pay & Checkout
+            </button>
+        </div>
+        
+        <!-- Navigation Bar -->
+        <div class="absolute bottom-0 w-full h-16 md:h-20 bg-white border-t flex justify-around items-center text-sm md:text-base text-gray-500 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            <a href="cart.html" class="flex flex-col items-center text-blue-600 font-bold transition">
+                <svg class="w-6 h-6 md:w-8 md:h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                Cart
+            </a>
+            <a href="history.html" class="flex flex-col items-center hover:text-blue-600 transition">
+                <svg class="w-6 h-6 md:w-8 md:h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                Receipts
+            </a>
+        </div>
+    </div>
+
+    <!-- PAIR BAND MODAL -->
+    <div id="pair-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 md:p-8 w-full max-w-sm md:max-w-md text-center shadow-2xl">
+            <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">Pair Your Band</h3>
+            <p class="text-gray-500 text-sm md:text-base mb-6">Enter the 6-character code printed in your instruction manual or on the back of your band.</p>
+            <input type="text" id="pair-code-input" class="w-full text-center text-3xl font-mono tracking-[0.5em] uppercase border-2 border-blue-400 rounded-lg py-4 mb-4 focus:outline-none focus:ring-4 focus:ring-blue-200" maxlength="6" placeholder="A1B2C3">
+            <button onclick="pairBand()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-4 px-4 rounded-lg transition-colors mb-3">Pair Device</button>
+            <button onclick="document.getElementById('pair-modal').classList.add('hidden')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition-colors">Cancel</button>
+        </div>
+    </div>
+
+
+
+    <script>
+        const API_URL = '/api';
+        const cartContainer = document.getElementById('cart-items');
+        const totalContainer = document.getElementById('cart-total');
+        const countContainer = document.getElementById('item-count');
+        
+        // Persistent device pairing
+        let currentDeviceId = localStorage.getItem('cortex_device_id');
+        
+        // If not paired, automatically show modal on load
+        if(!currentDeviceId) {
+            document.getElementById('pair-modal').classList.remove('hidden');
+        }
+
+        async function fetchCart() {
+            if (!currentDeviceId) return; // Wait for pairing
+            
+            try {
+                const response = await fetch(API_URL + '/cart?deviceId=' + currentDeviceId);
+                if(!response.ok) throw new Error("API Error");
+                const cartData = await response.json();
+                renderCart(cartData);
+            } catch (error) {
+                console.error(error);
+                cartContainer.innerHTML = `<div class="text-center text-red-500 py-10">Error connecting to cart.</div>`;
+            }
+        }
+
+        function renderCart(cartData) {
+            document.getElementById('checkout-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+
+            if (!cartData || !cartData.items || cartData.items.length === 0) {
+                cartContainer.innerHTML = `
+                <div class="text-center text-gray-400 py-16 flex flex-col items-center">
+                    <svg class="w-16 h-16 md:w-20 md:h-20 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <p class="text-lg md:text-xl font-medium">Your cart is empty</p>
+                    <p class="text-sm md:text-base mt-1">Scan an item with your band to add it.</p>
+                </div>`;
+                totalContainer.innerText = "$0.00";
+                countContainer.innerText = "0 items";
+                return;
+            }
+
+            let totalItems = 0;
+            cartContainer.innerHTML = cartData.items.map(item => {
+                totalItems += item.quantity;
+                return `
+                <div class="flex justify-between items-center bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <div class="bg-blue-100 text-blue-600 font-bold w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-sm md:text-lg">
+                            x${item.quantity}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-lg md:text-xl">${item.name}</h3>
+                            <p class="text-sm md:text-base text-gray-400">@ $${item.price.toFixed(2)} / ea</p>
+                        </div>
+                    </div>
+                    <div class="font-black text-xl md:text-2xl text-gray-700">
+                        $${(item.price * item.quantity).toFixed(2)}
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            totalContainer.innerText = `$${cartData.total.toFixed(2)}`;
+            countContainer.innerText = `${totalItems} items`;
+        }
+
+        setInterval(fetchCart, 2000);
+        fetchCart();
+
+        document.getElementById('checkout-btn').addEventListener('click', async () => {
+            if(!currentDeviceId) return alert("Please pair a band first!");
+            
+            const btn = document.getElementById('checkout-btn');
+            btn.innerText = "Redirecting to Stripe...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(API_URL + '/cart/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ deviceId: currentDeviceId })
+                });
+                const data = await res.json();
+                
+                if (data.url) {
+                    window.location.href = data.url; // Redirect to Stripe secure checkout
+                } else {
+                    alert("Error: " + (data.error || "Could not connect to Stripe. Store admin needs to add STRIPE_SECRET_KEY to Cloudflare."));
+                    btn.innerText = "Checkout / Pay";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error.");
+                btn.innerText = "Checkout / Pay";
+                btn.disabled = false;
+            }
+        });
+
+        // Handle returning from Stripe
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                alert("Payment Successful! Generating your receipt...");
+                
+                // Clear the cart and save to history now that payment is confirmed
+                await fetch(API_URL + '/cart/checkout', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ deviceId: currentDeviceId })
+                });
+                
+                // Clean up the URL so it doesn't trigger again on refresh
+                window.history.replaceState({}, document.title, "/index.html");
+                fetchCart();
+            }
+            if (urlParams.get('canceled') === 'true') {
+                alert("Payment was canceled.");
+                window.history.replaceState({}, document.title, "/index.html");
+            }
+        });
+        
+        function pairBand() {
+            const code = document.getElementById('pair-code-input').value.trim().toUpperCase();
+            if(code.length === 6) {
+                localStorage.setItem('cortex_device_id', code);
+                currentDeviceId = code;
+                alert("Pairing request sent! Start scanning items with your band.");
+                document.getElementById('pair-modal').classList.add('hidden');
+                document.getElementById('pair-code-input').value = "";
+                fetchCart(); // Instantly load this device's cart
+            } else {
+                alert("Please enter the full 6-character code printed on your device.");
+            }
+        }
+    </script>
+</body>
+</html>

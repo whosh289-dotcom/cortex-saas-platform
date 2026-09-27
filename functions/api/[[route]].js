@@ -128,8 +128,8 @@ export async function onRequest(context) {
         }
 
         const stripeParams = new URLSearchParams();
-        stripeParams.append('success_url', `${url.origin}/index.html?success=true`);
-        stripeParams.append('cancel_url', `${url.origin}/index.html?canceled=true`);
+        stripeParams.append('success_url', `${url.origin}/cart.html?success=true`);
+        stripeParams.append('cancel_url', `${url.origin}/cart.html?canceled=true`);
         stripeParams.append('mode', 'payment');
 
         cartItems.forEach((item, index) => {
