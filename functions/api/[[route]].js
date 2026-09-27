@@ -1,10 +1,10 @@
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
-    
+
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     };
 
@@ -12,30 +12,13 @@ export async function onRequest(context) {
 
     try {
       // ==========================================
-      // INVENTORY / ADMIN API (Real Data via KV)
-      // ==========================================
-      if (url.pathname === "/api/products") {
-        if (request.method === "GET") {
-          let products = await env.CART_KV.get("product_catalog", "json") || [];
-          if (products.length === 0) {
-              products = [
-                  { barcode: "123456789", name: "Organic Apple", price: 1.99 },
-                  { barcode: "987654321", name: "Almond Milk 1L", price: 3.49 },
-                  { barcode: "112233445", name: "Whole Wheat Bread", price: 2.99 }
-              ];
-              await env.CART_KV.put("product_catalog", JSON.stringify(products));
-          }
-          return new Response(JSON.stringify(products), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        }
-      }
-
-      // ==========================================
-      // ADMIN API
+      // ADMIN API (D1 SQL)
       // ==========================================
       if (request.method === "POST" && url.pathname === "/api/admin/setup") {
           const body = await request.json();
           if (body.storeId && body.stripeKey) {
-              await env.CART_KV.put(`stripe_key_${body.storeId}`, body.stripeKey);
+              await env.DB.prepare("INSERT INTO stores (store_id, stripe_key) VALUES (?, ?) ON CONFLICT(store_id) DO UPDATE SET stripe_key = excluded.stripe_key")
+                  .bind(body.storeId, body.stripeKey).run();
               return new Response(JSON.stringify({ status: "success" }), { headers: corsHeaders });
           }
           return new Response("Bad Request", { status: 400, headers: corsHeaders });
@@ -44,28 +27,23 @@ export async function onRequest(context) {
       if (request.method === "POST" && url.pathname === "/api/admin/catalog") {
           const body = await request.json();
           if (body.storeId && body.barcode && body.name && body.price !== undefined) {
-              let catalog = await env.CART_KV.get(`catalog_${body.storeId}`, "json") || [];
-              const idx = catalog.findIndex(p => p.barcode === body.barcode);
-              if (idx > -1) catalog[idx] = { barcode: body.barcode, name: body.name, price: body.price };
-              else catalog.push({ barcode: body.barcode, name: body.name, price: body.price });
-              await env.CART_KV.put(`catalog_${body.storeId}`, JSON.stringify(catalog));
+              await env.DB.prepare("INSERT INTO products (barcode, store_id, name, price) VALUES (?, ?, ?, ?) ON CONFLICT(barcode, store_id) DO UPDATE SET name = excluded.name, price = excluded.price")
+                  .bind(body.barcode, body.storeId, body.name, body.price).run();
               return new Response(JSON.stringify({ status: "success" }), { headers: corsHeaders });
           }
           return new Response("Bad Request", { status: 400, headers: corsHeaders });
       }
 
       // ==========================================
-      // CART API
+      // CART API (D1 SQL)
       // ==========================================
       if (request.method === "GET" && url.pathname === "/api/cart") {
         const deviceId = url.searchParams.get("deviceId");
         if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
 
-        let cartData = await env.CART_KV.get(`active_cart_${deviceId}`, "json") || { items: [] };
-        if (Array.isArray(cartData)) cartData = { items: cartData }; // Backwards compatibility
-
-        let total = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        return new Response(JSON.stringify({ items: cartData.items, total: total }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        const { results: cartItems } = await env.DB.prepare("SELECT barcode, name, price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
+        let total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        return new Response(JSON.stringify({ items: cartItems, total: total }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       if (request.method === "POST" && url.pathname === "/api/cart/add") {
@@ -78,30 +56,24 @@ export async function onRequest(context) {
         // --- STORE CHECK-IN LOGIC ---
         if (barcode.startsWith("STORE-CHECKIN-")) {
             const newStoreId = barcode.replace("STORE-CHECKIN-", "");
-            await env.CART_KV.put(`device_store_${deviceId}`, newStoreId);
-            // Clear their cart when they enter a new store
-            await env.CART_KV.put(`active_cart_${deviceId}`, JSON.stringify({ items: [] }));
+            await env.DB.prepare("INSERT INTO active_sessions (device_id, store_id) VALUES (?, ?) ON CONFLICT(device_id) DO UPDATE SET store_id = excluded.store_id").bind(deviceId, newStoreId).run();
+            await env.DB.prepare("DELETE FROM carts WHERE device_id = ?").bind(deviceId).run(); // Clear old cart
             return new Response(JSON.stringify({ status: "success", productName: `Checked into ${newStoreId}`, price: "0.00", cartTotal: 0 }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
-        let cartData = await env.CART_KV.get(`active_cart_${deviceId}`, "json") || { items: [] };
-        if (Array.isArray(cartData)) cartData = { items: cartData };
-
         // --- MULTI-STORE ROUTING ---
-        // 1. Find out which store this band is currently checked into
-        let storeId = await env.CART_KV.get(`device_store_${deviceId}`);
-        if (!storeId) {
+        const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
+        if (!session) {
             return new Response(JSON.stringify({ status: "error", error: "Please scan a Store Check-In Barcode first!" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
+        const storeId = session.store_id;
 
-        // 2. Check that specific store's catalog
-        let products = await env.CART_KV.get(`catalog_${storeId}`, "json") || [];
-        let product = products.find(p => p.barcode === barcode);
+        // Lookup product in D1
+        let product = await env.DB.prepare("SELECT name, price FROM products WHERE barcode = ? AND store_id = ?").bind(barcode, storeId).first();
         
-        // 3. If not found locally, query Global UPC Databases to give a helpful error
+        // Global UPC Fallback
         if (!product) {
             let globalName = "Unknown Product";
-            
             try {
                 const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`);
                 if (upcRes.ok) {
@@ -110,33 +82,23 @@ export async function onRequest(context) {
                 }
             } catch (e) {}
 
-            if (globalName === "Unknown Product") {
-                try {
-                    const offRes = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
-                    if (offRes.ok) {
-                        const offData = await offRes.json();
-                        if (offData.status === 1 && offData.product && offData.product.product_name) globalName = offData.product.product_name;
-                    }
-                } catch (e) {}
-            }
-            
             if (globalName !== "Unknown Product") {
-                return new Response(JSON.stringify({ status: "error", error: `Found '${globalName.substring(0, 20)}...', but Store '${storeId}' hasn't set a price for it.` }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                return new Response(JSON.stringify({ status: "error", error: `Found '${globalName.substring(0, 20)}...', but Store '${storeId}' hasn't set a price.` }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
             } else {
                 return new Response(JSON.stringify({ status: "error", error: "Barcode not recognized locally or globally." }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
             }
         }
 
-        // Add Product to Cart
-        const existingItemIndex = cartData.items.findIndex(item => item.barcode === barcode);
-        if (existingItemIndex > -1) {
-          cartData.items[existingItemIndex].quantity += 1;
+        // Add Product to D1 Cart
+        const existing = await env.DB.prepare("SELECT id, quantity FROM carts WHERE device_id = ? AND barcode = ?").bind(deviceId, barcode).first();
+        if (existing) {
+            await env.DB.prepare("UPDATE carts SET quantity = quantity + 1 WHERE id = ?").bind(existing.id).run();
         } else {
-          cartData.items.push({ barcode: barcode, name: product.name, price: product.price, quantity: 1 });
+            await env.DB.prepare("INSERT INTO carts (device_id, barcode, name, price, quantity) VALUES (?, ?, ?, ?, 1)").bind(deviceId, barcode, product.name, product.price).run();
         }
 
-        await env.CART_KV.put(`active_cart_${deviceId}`, JSON.stringify(cartData));
-        let total = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const { results: cartItems } = await env.DB.prepare("SELECT price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
+        let total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         return new Response(JSON.stringify({ status: "success", productName: product.name, price: product.price.toFixed(2), cartTotal: total }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -146,21 +108,17 @@ export async function onRequest(context) {
         const deviceId = body.deviceId;
         if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
 
-        let cartData = await env.CART_KV.get(`active_cart_${deviceId}`, "json") || { items: [] };
-        if (Array.isArray(cartData)) cartData = { items: cartData };
-
-        if (!cartData.items || cartData.items.length === 0) {
+        const { results: cartItems } = await env.DB.prepare("SELECT name, price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
+        if (cartItems.length === 0) {
             return new Response(JSON.stringify({ error: "Cart is empty" }), { status: 400, headers: corsHeaders });
         }
 
-        // --- MULTI-STORE STRIPE PAYMENTS ---
-        let storeId = await env.CART_KV.get(`device_store_${deviceId}`) || "demo_store";
+        // Fetch Stripe Key from D1
+        const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
+        const storeId = session ? session.store_id : null;
         
-        // Fetch this specific store's Stripe Key from the database!
-        let storeStripeKey = await env.CART_KV.get(`stripe_key_${storeId}`);
-        
-        // Fallback to global environment variable if store hasn't set their key yet
-        if (!storeStripeKey && env.STRIPE_SECRET_KEY) storeStripeKey = env.STRIPE_SECRET_KEY;
+        const store = await env.DB.prepare("SELECT stripe_key FROM stores WHERE store_id = ?").bind(storeId).first();
+        let storeStripeKey = store ? store.stripe_key : env.STRIPE_SECRET_KEY;
 
         if (!storeStripeKey) {
             return new Response(JSON.stringify({ error: `Store '${storeId}' has not configured their Stripe Bank Account.` }), { status: 500, headers: corsHeaders });
@@ -171,14 +129,13 @@ export async function onRequest(context) {
         stripeParams.append('cancel_url', `${url.origin}/index.html?canceled=true`);
         stripeParams.append('mode', 'payment');
 
-        cartData.items.forEach((item, index) => {
+        cartItems.forEach((item, index) => {
             stripeParams.append(`line_items[${index}][price_data][currency]`, 'usd');
             stripeParams.append(`line_items[${index}][price_data][product_data][name]`, item.name);
             stripeParams.append(`line_items[${index}][price_data][unit_amount]`, Math.round(item.price * 100)); // Stripe uses cents
             stripeParams.append(`line_items[${index}][quantity]`, item.quantity);
         });
 
-        // Call Stripe API using the Store's Specific Key
         const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
             method: 'POST',
             headers: {
@@ -188,13 +145,9 @@ export async function onRequest(context) {
             body: stripeParams.toString()
         });
 
-        const session = await stripeRes.json();
-        
-        if (session.error) {
-            return new Response(JSON.stringify({ error: session.error.message }), { status: 400, headers: corsHeaders });
-        }
-
-        return new Response(JSON.stringify({ url: session.url }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        const stripeSession = await stripeRes.json();
+        if (stripeSession.error) return new Response(JSON.stringify({ error: stripeSession.error.message }), { status: 400, headers: corsHeaders });
+        return new Response(JSON.stringify({ url: stripeSession.url }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       if (request.method === "POST" && url.pathname === "/api/cart/checkout") {
@@ -202,34 +155,13 @@ export async function onRequest(context) {
         const deviceId = body.deviceId;
         if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
 
-        let cartData = await env.CART_KV.get(`active_cart_${deviceId}`, "json") || { items: [] };
-        if (Array.isArray(cartData)) cartData = { items: cartData };
-
-        if (cartData.items.length > 0) {
-            let history = await env.CART_KV.get(`order_history_${deviceId}`, "json") || [];
-            let total = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            history.push({ id: Date.now(), date: new Date().toISOString(), items: cartData.items, total: total });
-            await env.CART_KV.put(`order_history_${deviceId}`, JSON.stringify(history));
-            await env.CART_KV.delete(`active_cart_${deviceId}`);
-        }
+        await env.DB.prepare("DELETE FROM carts WHERE device_id = ?").bind(deviceId).run();
         return new Response(JSON.stringify({ status: "success" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      
-      // ==========================================
-      // ORDER HISTORY API
-      // ==========================================
-      if (request.method === "GET" && url.pathname === "/api/history") {
-        const deviceId = url.searchParams.get("deviceId");
-        if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
 
-        let history = await env.CART_KV.get(`order_history_${deviceId}`, "json") || [];
-        history = history.sort((a,b) => b.id - a.id);
-        return new Response(JSON.stringify(history), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
+      return new Response("Not Found", { status: 404, headers: corsHeaders });
 
-      return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
-      
-    } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
     }
 }
