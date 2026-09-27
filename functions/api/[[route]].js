@@ -207,6 +207,26 @@ export async function onRequest(context) {
         return new Response(JSON.stringify(formattedOrders), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      if (request.method === "GET" && url.pathname === "/api/admin/history") {
+        const storeId = url.searchParams.get("storeId");
+        if(!storeId) return new Response(JSON.stringify({ error: "Missing storeId" }), { status: 400, headers: corsHeaders });
+
+        const { results: orders } = await env.DB.prepare("SELECT * FROM order_history WHERE store_id = ? ORDER BY timestamp DESC LIMIT 50").bind(storeId).all();
+        
+        let formattedOrders = [];
+        for (let order of orders) {
+             const { results: items } = await env.DB.prepare("SELECT name, price, quantity FROM order_items WHERE order_id = ?").bind(order.id).all();
+             formattedOrders.push({
+                 id: order.id,
+                 date: order.timestamp,
+                 deviceId: order.device_id,
+                 total: order.total,
+                 items: items
+             });
+        }
+        return new Response(JSON.stringify(formattedOrders), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       return new Response("Not Found", { status: 404, headers: corsHeaders });
 
     } catch (e) {
