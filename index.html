@@ -165,13 +165,18 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ storeId, barcode, name, price, stock })
                 });
-                if(res.ok) {
+                if (res.ok) {
                     alert(`Added ${name} (Stock: ${stock}) to ${storeId} catalog!`);
                     document.getElementById('prod-barcode').value = "";
                     document.getElementById('prod-name').value = "";
                     document.getElementById('prod-price').value = "";
                     document.getElementById('prod-stock').value = "";
-                } else alert("Error adding product.");
+                } else {
+                    // Try to extract server‑provided error message
+                    let errMsg = "Error adding product.";
+                    try { const data = await res.json(); if (data.error) errMsg = data.error; } catch (_) {}
+                    alert(errMsg);
+                }
             } catch(e) { alert("Network error."); }
         }
 
