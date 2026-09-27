@@ -10,81 +10,84 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-900 antialiased">
+<body class="bg-gray-100 min-h-screen text-gray-900 antialiased">
 
     <!-- Top Navigation -->
-    <nav class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
+    <nav class="bg-blue-800 border-b-4 border-blue-900 px-6 py-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-5xl mx-auto flex justify-between items-center text-white">
             <div class="flex items-center gap-2">
-                <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                <h1 class="text-xl font-semibold tracking-tight">Cortex Platform</h1>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                <h1 class="text-xl font-bold tracking-wide uppercase">Cortex Platform</h1>
             </div>
-            <span class="text-xs font-medium bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200">Admin Console</span>
+            <span class="text-xs font-bold bg-white text-blue-900 px-3 py-1 uppercase tracking-widest border-2 border-blue-900">Admin</span>
         </div>
     </nav>
     
-    <div class="max-w-5xl mx-auto p-6 mt-6 space-y-8">
+    <div class="max-w-5xl mx-auto p-6 mt-4 space-y-8">
         
         <!-- Header -->
-        <div>
-            <h2 class="text-2xl font-bold tracking-tight text-slate-900">Store Configuration</h2>
-            <p class="text-sm text-slate-500 mt-1">Manage your terminal settings and product catalog.</p>
+        <div class="mb-8 border-l-4 border-blue-700 pl-4">
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 uppercase">Store Configuration</h2>
+            <p class="text-base text-gray-600 mt-1">Manage your terminal settings and product catalog.</p>
         </div>
 
         <!-- 1. Store Config -->
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-            <h3 class="text-lg font-semibold text-slate-900 mb-1">1. Terminal Setup</h3>
-            <p class="text-sm text-slate-500 mb-5">Link your physical store to your Stripe account for payment processing.</p>
+        <div class="bg-white p-8 border-2 border-gray-300 shadow-sm relative">
+            <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">1. Terminal Setup</div>
+            
+            <p class="text-sm text-gray-600 mb-6 mt-4">Link your physical store to your Stripe account for payment processing.</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Store ID</label>
-                    <input type="text" id="store-id" placeholder="e.g. jfk-terminal-4" class="w-full border border-slate-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all">
+                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Store ID</label>
+                    <input type="text" id="store-id" placeholder="e.g. jfk-terminal-4" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Stripe Secret Key</label>
-                    <input type="password" id="stripe-key" placeholder="sk_live_..." class="w-full border border-slate-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all">
+                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Stripe Secret Key</label>
+                    <input type="password" id="stripe-key" placeholder="sk_live_..." class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
                 </div>
             </div>
-            <button onclick="saveStoreConfig()" class="mt-5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-2.5 px-5 rounded-md transition-all shadow-sm">
+            <button onclick="saveStoreConfig()" class="mt-6 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors border-2 border-blue-900 rounded-none">
                 Save Configuration
             </button>
         </div>
 
         <!-- 2. Catalog -->
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-            <h3 class="text-lg font-semibold text-slate-900 mb-1">2. Product Catalog</h3>
-            <p class="text-sm text-slate-500 mb-5">Add local inventory. (Requires Store ID to be set above).</p>
+        <div class="bg-white p-8 border-2 border-gray-300 shadow-sm relative mt-12">
+            <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">2. Product Catalog</div>
+            
+            <p class="text-sm text-gray-600 mb-6 mt-4">Add local inventory. (Requires Store ID to be set above).</p>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">UPC Barcode</label>
-                    <input type="text" id="prod-barcode" placeholder="041331092609" class="w-full border border-slate-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all">
+                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">UPC Barcode</label>
+                    <input type="text" id="prod-barcode" placeholder="041331092609" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Product Name</label>
-                    <input type="text" id="prod-name" placeholder="Premium Water 20oz" class="w-full border border-slate-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all">
+                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Product Name</label>
+                    <input type="text" id="prod-name" placeholder="Premium Water 20oz" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Price (USD)</label>
-                    <input type="number" step="0.01" id="prod-price" placeholder="3.99" class="w-full border border-slate-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all">
+                    <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Price (USD)</label>
+                    <input type="number" step="0.01" id="prod-price" placeholder="3.99" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
                 </div>
             </div>
-            <button onclick="addProduct()" class="mt-5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-2.5 px-5 rounded-md transition-all shadow-sm w-full md:w-auto">
+            <button onclick="addProduct()" class="mt-6 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors border-2 border-blue-900 w-full md:w-auto rounded-none">
                 Add to Catalog
             </button>
         </div>
 
         <!-- 3. Check-In -->
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-            <h3 class="text-lg font-semibold text-slate-900 mb-1">3. Door Check-In Barcode</h3>
-            <p class="text-sm text-slate-500 mb-5">Print this barcode and place it at your entrance. Shoppers must scan this to sync their band to your local pricing.</p>
+        <div class="bg-gray-200 p-8 border-2 border-gray-300 shadow-sm relative mt-12 mb-12">
+            <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">3. Door Check-In Barcode</div>
+            
+            <p class="text-sm text-gray-700 mb-6 mt-4 font-medium">Print this barcode and place it at your entrance. Shoppers must scan this to sync their band to your local pricing.</p>
             
             <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
-                <button onclick="generateCheckIn()" class="bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 text-sm font-medium py-2.5 px-5 rounded-md transition-all shadow-sm h-fit">
+                <button onclick="generateCheckIn()" class="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-400 text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors h-fit rounded-none">
                     Generate Printable Barcode
                 </button>
-                <div id="barcode-container" class="hidden bg-white p-4 border border-slate-200 rounded-md flex justify-center w-full md:w-auto">
+                <div id="barcode-container" class="hidden bg-white p-4 border-2 border-gray-800 flex justify-center w-full md:w-auto rounded-none">
                     <svg id="checkin-barcode-svg"></svg>
                 </div>
             </div>
@@ -149,12 +152,13 @@
             // Generate the visual barcode
             JsBarcode("#checkin-barcode-svg", `STORE-CHECKIN-${storeId}`, {
                 format: "CODE128",
-                lineColor: "#0f172a", // slate-900
+                lineColor: "#000", 
                 width: 2,
-                height: 50,
+                height: 60,
                 displayValue: true,
-                font: "Inter",
-                fontSize: 14
+                font: "monospace",
+                fontSize: 16,
+                fontWeight: "bold"
             });
         }
     </script>

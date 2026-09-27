@@ -8,56 +8,55 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Hide scrollbar for cleaner mobile look */
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-900 antialiased">
+<body class="bg-gray-100 min-h-screen text-gray-900 antialiased">
     
-    <div class="w-full md:max-w-xl mx-auto bg-white min-h-screen shadow-2xl flex flex-col relative border-x border-slate-200">
+    <div class="w-full md:max-w-xl mx-auto bg-white min-h-screen shadow-2xl flex flex-col relative border-x-4 border-gray-300">
         
         <!-- Header -->
-        <div class="bg-white border-b border-slate-100 px-6 py-4 flex justify-between items-center z-10 sticky top-0">
+        <div class="bg-blue-800 border-b-4 border-blue-900 px-6 py-5 flex justify-between items-center z-10 sticky top-0 text-white shadow-md">
             <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                <h1 class="text-lg font-semibold tracking-tight">Cortex Band</h1>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <h1 class="text-xl font-bold tracking-widest uppercase">Cortex Band</h1>
             </div>
-            <button onclick="document.getElementById('pair-modal').classList.remove('hidden')" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
-                Device Settings
+            <button onclick="document.getElementById('pair-modal').classList.remove('hidden')" class="text-xs font-bold uppercase tracking-wider text-white border-2 border-white px-3 py-1 hover:bg-white hover:text-blue-900 transition-colors rounded-none">
+                Pair
             </button>
         </div>
 
         <!-- Cart Content -->
-        <div class="flex-grow px-6 py-8 overflow-y-auto pb-32">
-            <div class="flex justify-between items-end mb-6">
-                <h2 class="text-2xl font-bold tracking-tight">Current Cart</h2>
-                <span id="item-count" class="text-sm font-medium text-slate-500">0 Items</span>
+        <div class="flex-grow px-6 py-8 overflow-y-auto pb-32 bg-gray-50">
+            <div class="flex justify-between items-end mb-6 border-b-2 border-gray-300 pb-2">
+                <h2 class="text-2xl font-bold tracking-wide uppercase text-gray-800">Current Cart</h2>
+                <span id="item-count" class="text-sm font-bold text-gray-500 uppercase tracking-wider">0 Items</span>
             </div>
             
-            <div id="cart-list" class="space-y-3">
-                <div class="text-center text-slate-400 py-12 text-sm">Please pair your band to view cart.</div>
+            <div id="cart-list" class="space-y-4">
+                <div class="text-center text-gray-500 py-12 font-bold uppercase tracking-wider bg-white border-2 border-gray-300">Please pair your band to view cart.</div>
             </div>
         </div>
         
         <!-- Checkout Footer -->
-        <div class="absolute bottom-16 w-full bg-white border-t border-slate-100 p-6 z-40">
-            <div class="flex justify-between items-center mb-4">
-                <span class="text-sm font-medium text-slate-500">Subtotal</span>
-                <span id="cart-total" class="text-2xl font-bold tracking-tight">$0.00</span>
+        <div class="absolute bottom-16 w-full bg-white border-t-4 border-gray-300 p-6 z-40">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-lg font-bold text-gray-600 uppercase tracking-widest">Subtotal</span>
+                <span id="cart-total" class="text-3xl font-black tracking-tight text-gray-900">$0.00</span>
             </div>
-            <button id="checkout-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3.5 rounded-lg transition-all shadow-sm flex justify-center items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <button id="checkout-btn" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 uppercase tracking-widest transition-all border-2 border-blue-900 shadow-md flex justify-center items-center gap-3 rounded-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 Secure Checkout
             </button>
         </div>
 
         <!-- Navigation Bar -->
-        <div class="absolute bottom-0 w-full bg-slate-50 border-t border-slate-200 flex justify-around p-2 text-xs font-medium text-slate-400 z-50">
-            <a href="cart.html" class="flex flex-col items-center text-slate-900 transition-colors w-1/2 py-2">
+        <div class="absolute bottom-0 w-full bg-gray-900 border-t-4 border-gray-800 flex justify-around p-0 text-sm font-bold text-gray-400 z-50 uppercase tracking-widest">
+            <a href="cart.html" class="flex flex-col items-center text-white bg-gray-800 w-1/2 py-3 border-r-2 border-gray-700 transition-colors rounded-none">
                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 Cart
             </a>
-            <a href="history.html" class="flex flex-col items-center hover:text-slate-900 transition-colors w-1/2 py-2">
+            <a href="history.html" class="flex flex-col items-center hover:text-white hover:bg-gray-800 w-1/2 py-3 transition-colors rounded-none">
                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 Receipts
             </a>
@@ -65,19 +64,21 @@
     </div>
 
     <!-- Pairing Modal -->
-    <div id="pair-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
-        <div class="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl">
-            <div class="text-center mb-6">
-                <h3 class="text-xl font-bold tracking-tight text-slate-900">Pair Your Band</h3>
-                <p class="text-sm text-slate-500 mt-2">Enter the 6-character code shown on your device screen or printed on the box.</p>
+    <div id="pair-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white p-8 max-w-sm w-full shadow-2xl border-4 border-gray-300 rounded-none relative">
+            
+            <div class="absolute top-0 left-0 bg-blue-800 text-white px-4 py-1 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-blue-900">Pair Device</div>
+
+            <div class="text-center mb-8 mt-6">
+                <p class="text-sm font-medium text-gray-600">Enter the 6-character code printed on the box.</p>
             </div>
             
-            <input type="text" id="pair-code-input" placeholder="e.g. A1B2C3" maxlength="6" class="w-full text-center text-2xl tracking-[0.25em] font-mono border border-slate-300 rounded-lg p-3 mb-4 outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all uppercase">
+            <input type="text" id="pair-code-input" placeholder="A1B2C3" maxlength="6" class="w-full text-center text-3xl tracking-[0.25em] font-mono border-2 border-gray-300 p-4 mb-6 outline-none focus:border-blue-600 transition-colors uppercase rounded-none">
             
-            <button onclick="pairBand()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg transition-all shadow-sm mb-3">
-                Connect Device
+            <button onclick="pairBand()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 uppercase tracking-wider transition-all border-2 border-blue-900 shadow-sm mb-4 rounded-none">
+                Connect
             </button>
-            <button onclick="document.getElementById('pair-modal').classList.add('hidden')" class="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium py-3 rounded-lg transition-all">
+            <button onclick="document.getElementById('pair-modal').classList.add('hidden')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 border-2 border-gray-400 font-bold py-4 uppercase tracking-wider transition-all rounded-none">
                 Cancel
             </button>
         </div>
@@ -103,7 +104,7 @@
                 const countEl = document.getElementById('item-count');
                 
                 if(!data.items || data.items.length === 0) {
-                    list.innerHTML = '<div class="text-center text-slate-400 py-12 text-sm border-2 border-dashed border-slate-100 rounded-lg">Your cart is empty.<br>Start scanning items!</div>';
+                    list.innerHTML = '<div class="text-center text-gray-500 py-12 font-bold uppercase tracking-wider bg-white border-2 border-gray-300">Your cart is empty.</div>';
                     totalEl.innerText = "$0.00";
                     countEl.innerText = "0 Items";
                     document.getElementById('checkout-btn').disabled = true;
@@ -118,14 +119,14 @@
                 list.innerHTML = data.items.map(item => {
                     totalCount += item.quantity;
                     return `
-                    <div class="flex justify-between items-center bg-white border border-slate-100 p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center bg-white border-2 border-gray-300 p-5 shadow-sm rounded-none">
                         <div class="flex items-center gap-4">
-                            <div class="bg-slate-50 text-slate-500 font-medium px-3 py-1 rounded-md text-sm border border-slate-100">
+                            <div class="bg-gray-800 text-white font-bold px-3 py-1 text-sm border-2 border-gray-900 rounded-none">
                                 ${item.quantity}x
                             </div>
-                            <span class="font-medium text-slate-800">${item.name}</span>
+                            <span class="font-bold text-gray-900 text-lg uppercase">${item.name}</span>
                         </div>
-                        <span class="font-semibold text-slate-900">$${(item.price * item.quantity).toFixed(2)}</span>
+                        <span class="font-black text-gray-900 text-xl">$${(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                     `;
                 }).join('');
@@ -138,14 +139,12 @@
             }
         }
         
-        // Auto-refresh loop
         setInterval(() => {
             if(localStorage.getItem('cortex_device_id') && document.getElementById('pair-modal').classList.contains('hidden')) {
                 fetchCart();
             }
         }, 2000);
         
-        // Initial load
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             if (!urlParams.get('success') && !urlParams.get('canceled')) {
@@ -154,9 +153,10 @@
 
             if(urlParams.get('success') === 'true') {
                 const btn = document.getElementById('checkout-btn');
-                btn.innerText = "Payment Successful";
-                btn.classList.replace('bg-slate-900', 'bg-green-600');
-                btn.classList.replace('hover:bg-slate-800', 'hover:bg-green-700');
+                btn.innerText = "SUCCESS!";
+                btn.classList.replace('bg-blue-700', 'bg-green-600');
+                btn.classList.replace('hover:bg-blue-800', 'hover:bg-green-700');
+                btn.classList.replace('border-blue-900', 'border-green-800');
                 
                 window.history.replaceState({}, document.title, window.location.pathname);
                 
@@ -168,9 +168,10 @@
                         body: JSON.stringify({ deviceId })
                     }).then(() => {
                         setTimeout(() => {
-                            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> Secure Checkout`;
-                            btn.classList.replace('bg-green-600', 'bg-slate-900');
-                            btn.classList.replace('hover:bg-green-700', 'hover:bg-slate-800');
+                            btn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> SECURE CHECKOUT`;
+                            btn.classList.replace('bg-green-600', 'bg-blue-700');
+                            btn.classList.replace('hover:bg-green-700', 'hover:bg-blue-800');
+                            btn.classList.replace('border-green-800', 'border-blue-900');
                             fetchCart();
                         }, 2500);
                     });
@@ -194,7 +195,7 @@
             if(!currentDeviceId) return;
             
             const btn = document.getElementById('checkout-btn');
-            btn.innerText = "Processing...";
+            btn.innerText = "PROCESSING...";
             btn.disabled = true;
 
             try {
@@ -208,7 +209,7 @@
                 else throw new Error(data.error || "Failed to create session");
             } catch(e) {
                 alert(e.message);
-                btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> Secure Checkout`;
+                btn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> SECURE CHECKOUT`;
                 btn.disabled = false;
             }
         });
