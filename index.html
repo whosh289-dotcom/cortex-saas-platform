@@ -188,9 +188,13 @@
             container.classList.remove('hidden');
             
             // Generate the visual barcode
-            JsBarcode("#checkin-barcode-svg", `STORE-CHECKIN-${storeId}`, {
+            // Ensure the check‑in code is unique even if store IDs collide (e.g., duplicate store names)
+            // Append a short random token (5 chars) to the store identifier
+            const uniqueSuffix = Math.random().toString(36).substr(2, 5).toUpperCase();
+            const checkInCode = `STORE-CHECKIN-${storeId}-${uniqueSuffix}`;
+            JsBarcode("#checkin-barcode-svg", checkInCode, {
                 format: "CODE128",
-                lineColor: "#000", 
+                lineColor: "#000",
                 width: 2,
                 height: 60,
                 displayValue: true,
@@ -199,6 +203,8 @@
                 fontWeight: "bold",
                 margin: 0
             });
+            // Optionally store the generated code for later reference
+            localStorage.setItem('cortex_checkin_code', checkInCode);
         }
 
         async function loadStoreHistory() {
