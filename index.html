@@ -60,13 +60,18 @@
         <div class="bg-blue-50 p-6 md:p-8 rounded-xl shadow-sm border border-blue-200">
             <h2 class="text-xl font-bold text-blue-900 mb-2">Print Check-in Barcode</h2>
             <p class="text-blue-800 mb-4">Because shoppers own their own bands, they must scan your store's Check-In barcode at the entrance so their band knows to use your prices and pay your Stripe account!</p>
-            <div class="flex items-center gap-4">
-                <button onclick="generateCheckIn()" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded-lg">Generate Door Barcode</button>
-                <div id="checkin-output" class="font-mono text-lg font-bold text-blue-900 bg-white px-4 py-2 border rounded hidden"></div>
+            <div class="flex flex-col md:flex-row items-center gap-4">
+                <button onclick="generateCheckIn()" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded-lg h-fit">Generate Door Barcode</button>
+                <div id="barcode-container" class="bg-white p-4 border rounded hidden flex justify-center w-full md:w-auto">
+                    <svg id="checkin-barcode-svg"></svg>
+                </div>
             </div>
         </div>
 
     </div>
+
+    <!-- Load JsBarcode for visual barcode generation -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
     <script>
         const API_URL = '/api/admin';
@@ -115,9 +120,18 @@
         function generateCheckIn() {
             const storeId = document.getElementById('store-id').value.trim();
             if(!storeId) return alert("Please enter your Store ID first.");
-            const output = document.getElementById('checkin-output');
-            output.innerText = `STORE-CHECKIN-${storeId}`;
-            output.classList.remove('hidden');
+            
+            const container = document.getElementById('barcode-container');
+            container.classList.remove('hidden');
+            
+            // Generate the visual barcode
+            JsBarcode("#checkin-barcode-svg", `STORE-CHECKIN-${storeId}`, {
+                format: "CODE128",
+                lineColor: "#000",
+                width: 2,
+                height: 60,
+                displayValue: true
+            });
         }
     </script>
 </body>
