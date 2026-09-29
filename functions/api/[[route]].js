@@ -55,7 +55,8 @@ export async function onRequest(context) {
 
         // --- STORE CHECK-IN LOGIC ---
         if (barcode.startsWith("STORE-CHECKIN-")) {
-            const newStoreId = barcode.replace("STORE-CHECKIN-", "");
+            const remainder = barcode.replace("STORE-CHECKIN-", "");
+            const newStoreId = remainder.split("-")[0];
             await env.DB.prepare("INSERT INTO active_sessions (device_id, store_id) VALUES (?, ?) ON CONFLICT(device_id) DO UPDATE SET store_id = excluded.store_id").bind(deviceId, newStoreId).run();
             await env.DB.prepare("DELETE FROM carts WHERE device_id = ?").bind(deviceId).run(); // Clear old cart
             return new Response(JSON.stringify({ status: "success", productName: `Checked into ${newStoreId}`, price: "0.00", cartTotal: 0 }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
