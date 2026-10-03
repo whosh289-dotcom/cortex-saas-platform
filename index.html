@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cortex SaaS — Premium Dashboard</title>
+<meta name="description" content="Cortex SaaS - The Next Generation Smart Retail POS and Enterprise Management Platform">
+<meta name="keywords" content="POS, Retail, Enterprise, SaaS, Cortex, Smart Retail">
+<title>Cortex SaaS — Premium Enterprise Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -56,27 +58,27 @@
       <nav class="p-4 space-y-1">
         <button onclick="switchTab('pos')" id="tab-pos" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-primary bg-cyan-900/30">
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z"></path></svg>
-          Live POS Terminal
+          Enterprise POS Terminal
         </button>
         <button onclick="switchTab('catalog')" id="tab-catalog" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-black/20 hover:text-slate-50 transition-colors">
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-          Product Catalog
+          Global Product Catalog
         </button>
         <button onclick="switchTab('devices')" id="tab-devices" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-black/20 hover:text-slate-50 transition-colors">
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-          Connected Devices
+          Device Fleet Management
         </button>
         <button onclick="switchTab('history')" id="tab-history" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-black/20 hover:text-slate-50 transition-colors">
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          Order History
+          Transaction Ledger
         </button>
       </nav>
     </div>
     <div class="p-4 border-t border-white/5">
-      <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Store Configuration</div>
+      <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Enterprise Configuration</div>
       <input type="text" id="store-id" placeholder="Store ID (e.g. jfk-4)" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary mb-2 outline-none"/>
       <input type="password" id="stripe-key" placeholder="Stripe Secret Key" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary mb-3 outline-none"/>
-      <button onclick="saveStoreConfig()" class="w-full bg-slate-800 text-white text-sm font-medium py-2 rounded-md hover:bg-slate-700 transition">Save Config</button>
+      <button onclick="saveStoreConfig()" class="w-full bg-slate-800 text-white text-sm font-medium py-2 rounded-md hover:bg-slate-700 transition">Synchronize Configuration</button>
     </div>
   </aside>
 
@@ -89,10 +91,10 @@
       <!-- POS TAB -->
       <div id="pos" class="tab-content active max-w-5xl mx-auto space-y-6">
         <div class="flex items-center justify-between mb-8">
-          <h1 class="text-3xl font-bold text-white">Live POS Terminal</h1>
+          <h1 class="text-3xl font-bold text-white">Enterprise POS Terminal</h1>
           <span class="px-3 py-1 bg-black/40/20 text-white rounded-full text-sm font-medium backdrop-blur-md border border-white/30 flex items-center">
             <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-            System Online
+            System Operational
           </span>
         </div>
 
@@ -131,7 +133,7 @@
             <div class="glass rounded-xl shadow-sm border border-white/5 p-6 bg-black/40 text-center">
               <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Store Access</h3>
               <button onclick="generateCheckIn()" class="w-full py-2.5 px-4 bg-black/40 border border-white/10 text-slate-300 font-medium rounded-lg shadow-sm hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
-                Generate Check-In Code
+                Generate Secure Access Token
               </button>
               <div id="barcode-container" class="mt-4 hidden justify-center p-4 border border-white/5 rounded-lg bg-black/20 overflow-x-auto">
                 <svg id="checkin-barcode-svg"></svg>
@@ -144,7 +146,7 @@
       <!-- CATALOG TAB -->
       <div id="catalog" class="tab-content max-w-6xl mx-auto space-y-6">
         <div class="flex items-center justify-between mb-8">
-          <h1 class="text-3xl font-bold text-white">Product Catalog</h1>
+          <h1 class="text-3xl font-bold text-white">Global Product Catalog</h1>
           <button onclick="loadCatalog()" class="px-4 py-2 bg-black/40/20 text-white rounded-lg text-sm font-medium backdrop-blur-md border border-white/30 hover:bg-black/40/30 transition shadow-sm">
             Refresh Catalog
           </button>
@@ -200,7 +202,7 @@
       <!-- DEVICES TAB -->
       <div id="devices" class="tab-content max-w-5xl mx-auto space-y-6">
         <div class="flex items-center justify-between mb-8">
-          <h1 class="text-3xl font-bold text-white">Connected Devices</h1>
+          <h1 class="text-3xl font-bold text-white">Device Fleet Management</h1>
           <button onclick="loadDevices()" class="px-4 py-2 bg-black/40/20 text-white rounded-lg text-sm font-medium backdrop-blur-md border border-white/30 hover:bg-black/40/30 transition shadow-sm">
             Refresh Devices
           </button>
@@ -227,7 +229,7 @@
       <!-- HISTORY TAB -->
       <div id="history" class="tab-content max-w-6xl mx-auto space-y-6">
         <div class="flex items-center justify-between mb-8">
-          <h1 class="text-3xl font-bold text-white">Order History</h1>
+          <h1 class="text-3xl font-bold text-white">Transaction Ledger</h1>
           <button onclick="loadStoreHistory()" class="px-4 py-2 bg-black/40/20 text-white rounded-lg text-sm font-medium backdrop-blur-md border border-white/30 hover:bg-black/40/30 transition shadow-sm">
             Load Receipts
           </button>
@@ -253,8 +255,27 @@
         </div>
       </div>
 
+      <!-- FOOTER -->
+      <footer class="mt-8 py-6 border-t border-white/5 flex flex-col md:flex-row justify-center items-center text-xs text-slate-400">
+        <div class="flex space-x-4 mt-4 md:mt-0">
+          <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+          <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+          <a href="#" class="hover:text-primary transition-colors">Support</a>
+        </div>
+      </footer>
+
     </div>
   </main>
+
+  <!-- COOKIE CONSENT BANNER -->
+  <div id="cookie-banner" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-11/12 max-w-2xl glass rounded-full px-6 py-4 flex flex-col md:flex-row items-center justify-between z-50 shadow-2xl">
+    <p class="text-sm text-slate-300 mb-4 md:mb-0">
+      We use enterprise-grade cookies to ensure the best experience on our platform. By continuing, you agree to our <a href="#" class="text-primary hover:underline">Privacy Policy</a>.
+    </p>
+    <button onclick="document.getElementById('cookie-banner').style.display='none'" class="whitespace-nowrap px-6 py-2 bg-primary text-black font-semibold rounded-full hover:bg-primaryHover transition shadow-[0_0_15px_rgba(0,200,255,0.4)]">
+      Accept & Continue
+    </button>
+  </div>
 
 <script>
   // TAB LOGIC
@@ -284,14 +305,14 @@
   async function saveStoreConfig() {
       const storeId = document.getElementById('store-id').value.trim();
       const stripeKey = document.getElementById('stripe-key').value.trim();
-      if(!storeId || !stripeKey) return alert("Please fill out both Store ID and Stripe Key.");
+      if(!storeId || !stripeKey) return alert("Please provide valid Enterprise credentials (Store ID and Stripe Key).");
       try {
           const res = await fetch(API_URL + '/setup', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ storeId, stripeKey })
           });
-          if(res.ok) alert("Store Settings Saved successfully!");
+          if(res.ok) alert("Enterprise Configuration successfully synchronized.");
           else alert("Error saving settings.");
       } catch(e) { alert("Network error."); }
   }
@@ -303,8 +324,8 @@
       const price = parseFloat(document.getElementById('prod-price').value);
       const stock = parseInt(document.getElementById('prod-stock').value) || 0;
       
-      if(!storeId) return alert("Please enter your Store ID at the bottom left first.");
-      if(!barcode || !name || isNaN(price)) return alert("Please fill out all product fields.");
+      if(!storeId) return alert("Authentication required: Please configure your Enterprise Store ID.");
+      if(!barcode || !name || isNaN(price)) return alert("Validation Error: Please complete all required product specifications.");
 
       try {
           const res = await fetch(API_URL + '/catalog', {
@@ -320,7 +341,7 @@
               document.getElementById('prod-stock').value = "";
               loadCatalog();
           } else {
-              let errMsg = "Error adding product.";
+              let errMsg = "Failed to synchronize product with the enterprise database.";
               try { const data = await res.json(); if (data.error) errMsg = data.error; } catch (_) {}
               alert(errMsg);
           }
@@ -346,7 +367,7 @@
       const storeId = document.getElementById('store-id').value.trim();
       if(!storeId) return alert("Please enter your Store ID first.");
       const list = document.getElementById('admin-history-list');
-      list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">Loading...</td></tr>';
+      list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">Retrieving data...</td></tr>';
       try {
           const res = await fetch(API_URL + '/history?storeId=' + storeId);
           if(!res.ok) throw new Error();
@@ -376,7 +397,7 @@
       const storeId = document.getElementById('store-id').value.trim();
       if(!storeId) return alert("Please enter Store ID.");
       const list = document.getElementById('catalog-list');
-      list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">Loading...</td></tr>';
+      list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">Retrieving data...</td></tr>';
       try {
           const res = await fetch(API_URL + '/catalog?storeId=' + storeId);
           if (!res.ok) throw new Error();
@@ -412,7 +433,7 @@
 
   async function loadDevices() {
       const list = document.getElementById('devices-list');
-      list.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 text-sm">Loading...</td></tr>';
+      list.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 text-sm">Retrieving data...</td></tr>';
       try {
           const res = await fetch(API_URL + '/devices');
           if (!res.ok) throw new Error();
