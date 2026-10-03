@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cortex Band — Smart POS Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Montserrat:wght@400;600;700;800;900&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg:        #07080d;
+    --surface:   rgba(14, 16, 24, 0.45);
+    --card:      rgba(255, 255, 255, 0.02);
+    --border:    rgba(255, 255, 255, 0.08);
+    --green:     #00e87a;
+    --cyan:      #00c8ff;
+    --red:       #ff4060;
+    --amber:     #ffb830;
+    --text:      #e8eaf0;
+    --muted:     #6b7394;
+    --font-ui:   'Montserrat', sans-serif;
+    --font-body: 'Sora', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--bg);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 232, 122, 0.09) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(0, 200, 255, 0.09) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(0, 232, 122, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(0, 200, 255, 0.05) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 8px; transition: background 0.3s; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,232,122,0.5); }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 100%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────── */
+  header {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(14,16,24,0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-icon-container {
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-text {
+    font-family: var(--font-ui);
+    font-size: 1.35rem; font-weight: 900; letter-spacing: -0.5px;
+    line-height: 1; text-transform: uppercase;
+  }
+  .logo-text span { color: var(--green); font-weight: 600; }
+  .logo-sub {
+    font-size: .65rem; color: var(--muted);
+    font-family: var(--font-mono); letter-spacing: .05em;
+    margin-top: 4px; text-transform: uppercase;
+  }
+  .header-right { display: flex; align-items: center; gap: 20px; }
+
+  /* ─── MAIN LAYOUT ─────────────────────────────────── */
+  main {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    grid-template-rows: auto 1fr;
+    gap: 0;
+    height: calc(100vh - 71px);
+  }
+
+  /* ─── LEFT PANEL ──────────────────────────────────── */
+  .left-panel {
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--border);
+    background: rgba(14,16,24,0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
+  }
+
+  .scanner-zone {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(0,232,122,.08), rgba(0,200,255,.04));
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  .scanner-label {
+    font-family: var(--font-mono); font-size: .65rem;
+    color: var(--muted); letter-spacing: .12em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .scanner-display {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    box-shadow: inset 0 2px 10px rgba(255,255,255,0.02), 0 8px 20px rgba(0,0,0,0.2);
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .scanner-display.flash {
+    border-color: var(--green);
+    box-shadow: 0 0 20px rgba(0,232,122,.2), inset 0 0 15px rgba(0,232,122,.1);
+    animation: scan-flash .4s ease;
+  }
+  @keyframes scan-flash {
+    0%   { background: rgba(0,232,122,.2); }
+    100% { background: rgba(0,0,0,0.25); }
+  }
+
+  .scan-icon {
+    position: relative; width: 28px; height: 28px;
+    border: 2px solid rgba(0,232,122,0.4);
+    border-radius: 6px; flex-shrink: 0;
+    display: flex; justify-content: center;
+    box-shadow: 0 0 10px rgba(0,232,122,0.1), inset 0 0 8px rgba(0,232,122,0.1);
+  }
+  .scan-icon .laser {
+    position: absolute; width: 80%; height: 2px;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green), 0 0 2px #fff;
+    border-radius: 2px;
+    animation: laser-sweep 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes laser-sweep {
+    0%   { top: 2px;  opacity: 0.2; transform: scaleX(0.85); }
+    50%  { opacity: 1; box-shadow: 0 0 12px var(--green), 0 0 4px #fff; transform: scaleX(1); }
+    100% { top: 20px; opacity: 0.2; transform: scaleX(0.85); }
+  }
+
+  .cart-header {
+    padding: 16px 28px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cart-title {
+    font-size: .8rem; font-weight: 600; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .item-count {
+    background: rgba(0,232,122,.12); color: var(--green);
+    border-radius: 20px; padding: 2px 10px;
+    font-size: .72rem; font-weight: 600; font-family: var(--font-mono);
+  }
+
+  .cart-list { flex: 1; overflow-y: auto; padding: 0 28px 24px; }
+
+  .cart-item {
+    display: grid; grid-template-columns: 40px 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 14px 16px;
+    background: var(--card); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; margin-bottom: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  /* ─── RIGHT PANEL ─────────────────────────────────── */
+  .right-panel {
+    display: flex; flex-direction: column;
+    background: rgba(14,16,24,0.35);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    overflow: hidden;
+  }
+
+  .summary-panel {
+    padding: 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .action-panel { padding: 16px 20px; flex-shrink: 0; }
+  
+  /* Use this logic to style the Admin Tables (Products, Devices) */
+  .admin-table {
+     width: 100%; border-collapse: collapse; margin-top: 20px;
+     font-family: var(--font-mono); font-size: 0.85rem;
+  }
+  .admin-table th { text-align: left; padding: 12px; color: var(--cyan); border-bottom: 1px solid var(--border); }
+  .admin-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+</style>
+</head>
+<body>
+<!-- This is just a CSS reference file for DeepCoder -->
+</body>
+</html>

@@ -1,261 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cortex Platform - Store Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cortex SaaS — Premium Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #001f3f, #07080d 50%, #000000); color: #cbd5e1; }
+  .glass { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+  .glass:hover { border-color: rgba(0, 200, 255, 0.3); box-shadow: 0 0 15px rgba(0,200,255,0.2); }
+  .flash { border-color: #00e87a !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4) !important; transition: all 0.2s ease-in-out; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  .laser {
+    position: absolute; width: 100%; height: 2px;
+    background: #00e87a; box-shadow: 0 0 8px #00e87a, 0 0 2px #fff;
+    animation: laser-sweep 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes laser-sweep {
+    0%   { top: 5%;  opacity: 0.2; transform: scaleX(0.85); }
+    50%  { opacity: 1; box-shadow: 0 0 12px #00e87a, 0 0 4px #fff; transform: scaleX(1); }
+    100% { top: 95%; opacity: 0.2; transform: scaleX(0.85); }
+  }
+  @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+  .floating { animation: float 6s ease-in-out infinite; }
+</style>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#00c8ff',
+          primaryHover: '#009ecc',
+          success: '#00e87a',
+          dark: '#07080d',
+        }
+      }
+    }
+  }
+</script>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-900 antialiased">
-
-    <!-- Top Navigation -->
-    <nav class="bg-blue-800 border-b-4 border-blue-900 px-4 md:px-8 py-4 sticky top-0 z-50 shadow-md">
-        <div class="w-full flex justify-between items-center text-white">
-            <div class="flex items-center gap-3">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                <h1 class="text-xl md:text-2xl font-black tracking-widest uppercase">Cortex Platform</h1>
-            </div>
-            <span class="text-xs font-bold bg-white text-blue-900 px-4 py-1.5 uppercase tracking-widest border-2 border-blue-900 shadow-sm hidden md:block">Store Admin Console</span>
-        </div>
-    </nav>
-    
-    <div class="w-full max-w-[1600px] mx-auto p-4 md:p-8 mt-4">
-        
-        <div class="mb-10 border-l-8 border-blue-700 pl-5">
-            <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900 uppercase">Dashboard</h2>
-            <p class="text-base font-medium text-gray-600 mt-2 uppercase tracking-wide">Manage your terminal settings, inventory, and history.</p>
-        </div>
-
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-10">
-            
-            <!-- LEFT COLUMN (Settings & Barcode) -->
-            <div class="xl:col-span-4 space-y-10">
-                
-                <!-- 1. Store Config -->
-                <div class="bg-white p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
-                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">1. Terminal Setup</div>
-                    
-                    <p class="text-sm text-gray-600 mb-6 font-medium">Link your physical store to your Stripe account.</p>
-                    
-                    <div class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Store ID</label>
-                            <input type="text" id="store-id" placeholder="e.g. jfk-terminal-4" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Stripe Secret Key</label>
-                            <input type="password" id="stripe-key" placeholder="sk_live_..." class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
-                        </div>
-                        <button onclick="saveStoreConfig()" class="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-4 uppercase tracking-widest transition-colors border-2 border-blue-900 rounded-none mt-2">
-                            Save Config
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 2. Check-In -->
-                <div class="bg-gray-200 p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
-                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">2. Check-In Barcode</div>
-                    
-                    <p class="text-sm text-gray-700 mb-6 font-medium">Print this barcode at your entrance. Shoppers must scan this to sync their band.</p>
-                    
-                    <button onclick="generateCheckIn()" class="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-400 text-sm font-bold py-4 uppercase tracking-widest transition-colors rounded-none mb-6">
-                        Generate Code
-                    </button>
-                    <div id="barcode-container" class="hidden bg-white p-6 border-2 border-gray-800 flex justify-center w-full rounded-none">
-                        <svg id="checkin-barcode-svg" class="w-full max-w-xs"></svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN (Catalog & History) -->
-            <div class="xl:col-span-8 space-y-10">
-                
-                <!-- 3. Catalog -->
-                <div class="bg-white p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
-                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">3. Product Catalog</div>
-                    
-                    <p class="text-sm text-gray-600 mb-6 font-medium">Add local inventory. (Requires Store ID to be set first).</p>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">UPC Barcode</label>
-                            <input type="text" id="prod-barcode" placeholder="041331092609" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Product Name</label>
-                            <input type="text" id="prod-name" placeholder="Water 20oz" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Price (USD)</label>
-                            <input type="number" step="0.01" id="prod-price" placeholder="3.99" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">Stock Qty</label>
-                            <input type="number" id="prod-stock" placeholder="100" class="w-full border-2 border-gray-300 p-3 text-base focus:border-blue-600 focus:outline-none transition-colors rounded-none font-mono">
-                        </div>
-                    </div>
-                    <div class="flex justify-end mt-6">
-                        <button onclick="addProduct()" class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-4 px-10 uppercase tracking-widest transition-colors border-2 border-blue-900 rounded-none">
-                            Add to Catalog
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 4. Store History -->
-                <div class="bg-gray-200 p-6 md:p-8 border-2 border-gray-300 shadow-sm relative pt-10">
-                    <div class="absolute top-0 left-0 bg-gray-800 text-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider -mt-4 ml-6 border-2 border-gray-800">4. Store Order History</div>
-                    
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                        <p class="text-sm text-gray-700 font-medium max-w-md">View all receipts processed through your store terminal.</p>
-                        <button onclick="loadStoreHistory()" class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-3 px-6 uppercase tracking-wider transition-colors border-2 border-blue-900 rounded-none shrink-0">
-                            Load Receipts
-                        </button>
-                    </div>
-
-                    <div id="admin-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="col-span-full text-center font-bold text-gray-500 uppercase tracking-widest border-2 border-dashed border-gray-400 py-12 bg-gray-100">Click load to view history</div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+<body class="h-screen flex overflow-hidden selection:bg-primary/30 selection:text-white">
+  
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-black/40 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between shadow-sm z-10 shrink-0">
+    <div>
+      <div class="h-16 flex items-center px-6 border-b border-white/5">
+        <svg class="w-8 h-8 text-primary mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <span class="text-xl font-bold tracking-tight text-slate-200">Cortex<span class="text-primary font-medium">SaaS</span></span>
+      </div>
+      <nav class="p-4 space-y-1">
+        <button onclick="switchTab('pos')" id="tab-pos" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-primary bg-cyan-900/30">
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+          Live POS Terminal
+        </button>
+        <button onclick="switchTab('catalog')" id="tab-catalog" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-black/20 hover:text-slate-50 transition-colors">
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          Product Catalog
+        </button>
+        <button onclick="switchTab('devices')" id="tab-devices" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-black/20 hover:text-slate-50 transition-colors">
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          Connected Devices
+        </button>
+        <button onclick="switchTab('history')" id="tab-history" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-black/20 hover:text-slate-50 transition-colors">
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Order History
+        </button>
+      </nav>
     </div>
+    <div class="p-4 border-t border-white/5">
+      <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Store Configuration</div>
+      <input type="text" id="store-id" placeholder="Store ID (e.g. jfk-4)" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary mb-2 outline-none"/>
+      <input type="password" id="stripe-key" placeholder="Stripe Secret Key" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary mb-3 outline-none"/>
+      <button onclick="saveStoreConfig()" class="w-full bg-slate-800 text-white text-sm font-medium py-2 rounded-md hover:bg-slate-700 transition">Save Config</button>
+    </div>
+  </aside>
 
-    <!-- Load JsBarcode for visual barcode generation -->
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-64 bg-cyan-500 z-0" style="clip-path: polygon(0 0, 100% 0, 100% 100%, 0 80%); transition: height 0.3s ease;"></div>
+    
+    <div class="flex-1 overflow-y-auto p-8 z-10">
+      
+      <!-- POS TAB -->
+      <div id="pos" class="tab-content active max-w-5xl mx-auto space-y-6">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-3xl font-bold text-white">Live POS Terminal</h1>
+          <span class="px-3 py-1 bg-black/40/20 text-white rounded-full text-sm font-medium backdrop-blur-md border border-white/30 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+            System Online
+          </span>
+        </div>
 
-    <script>
-        const API_URL = '/api/admin';
-        const BASE_API = '/api';
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <div class="lg:col-span-2 flex flex-col space-y-6">
+            <!-- Active Carts -->
+            <div class="glass rounded-xl overflow-hidden shadow-[0_0_15px_rgba(0,200,255,0.15)] transition-shadow duration-300">
+              <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-black/40">
+                <h2 class="text-lg font-semibold text-slate-200">Live Active Carts</h2>
+                <div class="bg-cyan-900/50 text-primary text-xs font-bold px-2.5 py-1 rounded-full"><span id="cart-count">0</span> Active</div>
+              </div>
+              <div class="p-6 h-[400px] overflow-y-auto bg-black/20/50" id="carts-list">
+                <!-- Carts will populate here -->
+              </div>
+            </div>
+          </div>
 
-        async function saveStoreConfig() {
-            const storeId = document.getElementById('store-id').value.trim();
-            const stripeKey = document.getElementById('stripe-key').value.trim();
-            
-            if(!storeId || !stripeKey) return alert("Please fill out both Store ID and Stripe Key.");
+          <div class="flex flex-col space-y-6">
+            <!-- Scanner Zone -->
+            <div class="glass rounded-xl p-6 relative overflow-hidden shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-shadow duration-300 floating">
+              <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-10"></div>
+              <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Scanner Activity</h3>
+              <div id="scanner-display" class="flex items-center p-4 border border-white/5 rounded-lg bg-black/20 shadow-inner">
+                <div class="relative w-12 h-12 border-2 border-primary/30 rounded flex-shrink-0 flex items-center justify-center mr-4 bg-black/40">
+                  <div class="laser"></div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-400 font-medium mb-1 uppercase">Status</div>
+                  <div class="text-sm font-mono text-primary font-semibold">Awaiting Connection...</div>
+                </div>
+              </div>
+            </div>
 
-            try {
-                const res = await fetch(API_URL + '/setup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ storeId, stripeKey })
-                });
-                if(res.ok) alert("Store Settings Saved successfully!");
-                else alert("Error saving settings.");
-            } catch(e) { alert("Network error."); }
-        }
+            <!-- Check-in Code -->
+            <div class="glass rounded-xl shadow-sm border border-white/5 p-6 bg-black/40 text-center">
+              <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Store Access</h3>
+              <button onclick="generateCheckIn()" class="w-full py-2.5 px-4 bg-black/40 border border-white/10 text-slate-300 font-medium rounded-lg shadow-sm hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
+                Generate Check-In Code
+              </button>
+              <div id="barcode-container" class="mt-4 hidden justify-center p-4 border border-white/5 rounded-lg bg-black/20 overflow-x-auto">
+                <svg id="checkin-barcode-svg"></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        async function addProduct() {
-            const storeId = document.getElementById('store-id').value.trim();
-            const barcode = document.getElementById('prod-barcode').value.trim();
-            const name = document.getElementById('prod-name').value.trim();
-            const price = parseFloat(document.getElementById('prod-price').value);
-            const stock = parseInt(document.getElementById('prod-stock').value) || 0;
-            
-            if(!storeId) return alert("Please enter your Store ID at the top first.");
-            if(!barcode || !name || isNaN(price)) return alert("Please fill out all product fields.");
+      <!-- CATALOG TAB -->
+      <div id="catalog" class="tab-content max-w-6xl mx-auto space-y-6">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-3xl font-bold text-white">Product Catalog</h1>
+          <button onclick="loadCatalog()" class="px-4 py-2 bg-black/40/20 text-white rounded-lg text-sm font-medium backdrop-blur-md border border-white/30 hover:bg-black/40/30 transition shadow-sm">
+            Refresh Catalog
+          </button>
+        </div>
 
-            try {
-                const res = await fetch(API_URL + '/catalog', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ storeId, barcode, name, price, stock })
-                });
-                if (res.ok) {
-                    alert(`Added ${name} (Stock: ${stock}) to ${storeId} catalog!`);
-                    document.getElementById('prod-barcode').value = "";
-                    document.getElementById('prod-name').value = "";
-                    document.getElementById('prod-price').value = "";
-                    document.getElementById('prod-stock').value = "";
-                } else {
-                    // Try to extract server‑provided error message
-                    let errMsg = "Error adding product.";
-                    try { const data = await res.json(); if (data.error) errMsg = data.error; } catch (_) {}
-                    alert(errMsg);
-                }
-            } catch(e) { alert("Network error."); }
-        }
+        <div class="glass bg-black/40 rounded-xl shadow-sm border border-white/5 overflow-hidden">
+          <div class="p-6 border-b border-white/5 bg-black/20/50">
+            <h2 class="text-lg font-semibold text-slate-200 mb-4">Add New Product</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">UPC Barcode</label>
+                <input type="text" id="prod-barcode" placeholder="041331092609" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none bg-black/40"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Product Name</label>
+                <input type="text" id="prod-name" placeholder="Water 20oz" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none bg-black/40"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Price (USD)</label>
+                <input type="number" step="0.01" id="prod-price" placeholder="3.99" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none bg-black/40"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Stock Qty</label>
+                <div class="flex gap-2">
+                  <input type="number" id="prod-stock" placeholder="100" class="w-full px-3 py-2 text-sm border border-white/10 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none bg-black/40"/>
+                  <button onclick="addProduct()" class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md shadow-sm hover:bg-primaryHover transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-black/40 border-b border-white/5 text-xs uppercase tracking-wider text-slate-400">
+                  <th class="p-4 font-semibold">Barcode</th>
+                  <th class="p-4 font-semibold">Name</th>
+                  <th class="p-4 font-semibold">Price</th>
+                  <th class="p-4 font-semibold">Stock</th>
+                  <th class="p-4 font-semibold">Action</th>
+                </tr>
+              </thead>
+              <tbody id="catalog-list" class="divide-y divide-slate-100 bg-black/40">
+                <!-- Catalog items -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-        function generateCheckIn() {
-            const storeId = document.getElementById('store-id').value.trim();
-            if(!storeId) return alert("Please enter your Store ID first.");
-            
-            const container = document.getElementById('barcode-container');
-            container.classList.remove('hidden');
-            
-            // Generate the visual barcode
-            // Ensure the check‑in code is unique even if store IDs collide (e.g., duplicate store names)
-            // Append a short random token (5 chars) to the store identifier
-            const uniqueSuffix = Math.random().toString(36).substr(2, 5).toUpperCase();
-            const checkInCode = `STORE-CHECKIN-${storeId}-${uniqueSuffix}`;
-            JsBarcode("#checkin-barcode-svg", checkInCode, {
-                format: "CODE128",
-                lineColor: "#000",
-                width: 2,
-                height: 60,
-                displayValue: true,
-                font: "monospace",
-                fontSize: 16,
-                fontWeight: "bold",
-                margin: 0
-            });
-            // Optionally store the generated code for later reference
-            localStorage.setItem('cortex_checkin_code', checkInCode);
-        }
+      <!-- DEVICES TAB -->
+      <div id="devices" class="tab-content max-w-5xl mx-auto space-y-6">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-3xl font-bold text-white">Connected Devices</h1>
+          <button onclick="loadDevices()" class="px-4 py-2 bg-black/40/20 text-white rounded-lg text-sm font-medium backdrop-blur-md border border-white/30 hover:bg-black/40/30 transition shadow-sm">
+            Refresh Devices
+          </button>
+        </div>
 
-        async function loadStoreHistory() {
-            const storeId = document.getElementById('store-id').value.trim();
-            if(!storeId) return alert("Please enter your Store ID at the top first.");
+        <div class="glass bg-black/40 rounded-xl shadow-sm border border-white/5 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-black/20 border-b border-white/5 text-xs uppercase tracking-wider text-slate-400">
+                  <th class="p-4 font-semibold">Device ID</th>
+                  <th class="p-4 font-semibold">Type</th>
+                  <th class="p-4 font-semibold">Last Seen</th>
+                </tr>
+              </thead>
+              <tbody id="devices-list" class="divide-y divide-slate-100 bg-black/40">
+                <!-- Devices -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-            const list = document.getElementById('admin-history-list');
-            list.innerHTML = '<div class="col-span-full text-center font-bold text-gray-800 border-2 border-gray-400 bg-white py-12 uppercase tracking-widest">Loading...</div>';
+      <!-- HISTORY TAB -->
+      <div id="history" class="tab-content max-w-6xl mx-auto space-y-6">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-3xl font-bold text-white">Order History</h1>
+          <button onclick="loadStoreHistory()" class="px-4 py-2 bg-black/40/20 text-white rounded-lg text-sm font-medium backdrop-blur-md border border-white/30 hover:bg-black/40/30 transition shadow-sm">
+            Load Receipts
+          </button>
+        </div>
 
-            try {
-                const res = await fetch(API_URL + '/history?storeId=' + storeId);
-                if(!res.ok) throw new Error();
-                const history = await res.json();
-                
-                if(!history || history.length === 0) {
-                    list.innerHTML = '<div class="col-span-full text-center font-bold text-gray-500 border-2 border-dashed border-gray-400 py-12 uppercase tracking-widest">No past orders found.</div>';
-                    return;
-                }
-                
-                list.innerHTML = history.map(order => {
-                    const dateObj = new Date(order.date);
-                    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-                    
-                    const itemsHtml = order.items.map(i => `
-                        <div class="flex justify-between py-1.5 text-sm border-b border-gray-200 last:border-0">
-                            <span class="text-gray-800 font-bold uppercase"><span class="text-blue-700 mr-1">${i.quantity}X</span> ${i.name}</span> 
-                            <span class="text-gray-900 font-black">$${(i.price * i.quantity).toFixed(2)}</span>
-                        </div>
-                    `).join('');
+        <div class="glass bg-black/40 rounded-xl shadow-sm border border-white/5 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-black/20 border-b border-white/5 text-xs uppercase tracking-wider text-slate-400">
+                  <th class="p-4 font-semibold">Order ID</th>
+                  <th class="p-4 font-semibold">Device</th>
+                  <th class="p-4 font-semibold">Date</th>
+                  <th class="p-4 font-semibold">Total</th>
+                  <th class="p-4 font-semibold">Items</th>
+                </tr>
+              </thead>
+              <tbody id="admin-history-list" class="divide-y divide-slate-100 bg-black/40">
+                <!-- History -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-                    return `
-                    <div class="bg-white border-2 border-gray-300 p-5 relative">
-                        <div class="flex justify-between items-center mb-4 border-b-2 border-gray-800 pb-3">
-                            <span class="bg-gray-800 text-white px-2 py-1 text-xs font-bold uppercase tracking-wider">ORD #${order.id}</span>
-                            <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest bg-gray-100 px-2 border border-gray-300">DEV: ${order.deviceId}</span>
-                        </div>
-                        <div class="mb-4">
-                            ${itemsHtml}
-                        </div>
-                        <div class="flex justify-between items-center pt-3 bg-gray-100 -mx-5 -mb-5 px-5 pb-4 border-t-2 border-gray-300 mt-2">
-                            <span class="text-xs font-bold text-gray-600 uppercase tracking-widest">${dateStr}</span>
-                            <span class="font-black text-xl text-green-700">$${order.total.toFixed(2)}</span>
-                        </div>
+    </div>
+  </main>
+
+<script>
+  // TAB LOGIC
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    
+    // Reset nav styles
+    ['pos', 'catalog', 'devices', 'history'].forEach(id => {
+      const btn = document.getElementById('tab-' + id);
+      btn.className = 'w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-black/20 hover:text-slate-50 transition-colors';
+    });
+    
+    // Active nav style
+    const activeBtn = document.getElementById('tab-' + tabId);
+    activeBtn.className = 'w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-primary bg-cyan-900/30';
+
+    // Context aware background height adjustment for visual polish
+    const headerBg = document.querySelector('.bg-cyan-500');
+    if (tabId === 'pos') headerBg.style.height = '16rem';
+    else headerBg.style.height = '12rem';
+  }
+
+  // --- API FUNCTIONALITY ---
+  const API_URL = '/api/admin';
+
+  async function saveStoreConfig() {
+      const storeId = document.getElementById('store-id').value.trim();
+      const stripeKey = document.getElementById('stripe-key').value.trim();
+      if(!storeId || !stripeKey) return alert("Please fill out both Store ID and Stripe Key.");
+      try {
+          const res = await fetch(API_URL + '/setup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ storeId, stripeKey })
+          });
+          if(res.ok) alert("Store Settings Saved successfully!");
+          else alert("Error saving settings.");
+      } catch(e) { alert("Network error."); }
+  }
+
+  async function addProduct() {
+      const storeId = document.getElementById('store-id').value.trim();
+      const barcode = document.getElementById('prod-barcode').value.trim();
+      const name = document.getElementById('prod-name').value.trim();
+      const price = parseFloat(document.getElementById('prod-price').value);
+      const stock = parseInt(document.getElementById('prod-stock').value) || 0;
+      
+      if(!storeId) return alert("Please enter your Store ID at the bottom left first.");
+      if(!barcode || !name || isNaN(price)) return alert("Please fill out all product fields.");
+
+      try {
+          const res = await fetch(API_URL + '/catalog', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ storeId, barcode, name, price, stock })
+          });
+          if (res.ok) {
+              alert(`Added ${name} to catalog!`);
+              document.getElementById('prod-barcode').value = "";
+              document.getElementById('prod-name').value = "";
+              document.getElementById('prod-price').value = "";
+              document.getElementById('prod-stock').value = "";
+              loadCatalog();
+          } else {
+              let errMsg = "Error adding product.";
+              try { const data = await res.json(); if (data.error) errMsg = data.error; } catch (_) {}
+              alert(errMsg);
+          }
+      } catch(e) { alert("Network error."); }
+  }
+
+  function generateCheckIn() {
+      const storeId = document.getElementById('store-id').value.trim();
+      if(!storeId) return alert("Please enter your Store ID first.");
+      const container = document.getElementById('barcode-container');
+      container.classList.remove('hidden');
+      container.classList.add('flex');
+      const uniqueSuffix = Math.random().toString(36).substr(2, 5).toUpperCase();
+      const checkInCode = `STORE-CHECKIN-${storeId}-${uniqueSuffix}`;
+      JsBarcode("#checkin-barcode-svg", checkInCode, {
+          format: "CODE128", lineColor: "#0f172a", width: 2, height: 60, displayValue: true,
+          font: "monospace", fontSize: 14, fontWeight: "600", margin: 0, background: "transparent"
+      });
+      localStorage.setItem('cortex_checkin_code', checkInCode);
+  }
+
+  async function loadStoreHistory() {
+      const storeId = document.getElementById('store-id').value.trim();
+      if(!storeId) return alert("Please enter your Store ID first.");
+      const list = document.getElementById('admin-history-list');
+      list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">Loading...</td></tr>';
+      try {
+          const res = await fetch(API_URL + '/history?storeId=' + storeId);
+          if(!res.ok) throw new Error();
+          const history = await res.json();
+          if(!history || history.length === 0) {
+              list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">No past orders found.</td></tr>';
+              return;
+          }
+          list.innerHTML = history.map(order => {
+              const dateObj = new Date(order.date);
+              const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+              const itemsHtml = order.items.map(i => `<span class="font-medium text-slate-300">${i.quantity}x</span> ${i.name}`).join(', ');
+              return `<tr class="hover:bg-black/20">
+                  <td class="p-4 text-sm font-medium text-primary">#${order.id}</td>
+                  <td class="p-4 text-xs font-mono text-slate-400">${order.deviceId}</td>
+                  <td class="p-4 text-sm text-slate-400">${dateStr}</td>
+                  <td class="p-4 text-sm font-bold text-success">$${order.total.toFixed(2)}</td>
+                  <td class="p-4 text-xs text-slate-400">${itemsHtml}</td>
+              </tr>`;
+          }).join('');
+      } catch (err) {
+          list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500 text-sm">Error loading history.</td></tr>';
+      }
+  }
+
+  async function loadCatalog() {
+      const storeId = document.getElementById('store-id').value.trim();
+      if(!storeId) return alert("Please enter Store ID.");
+      const list = document.getElementById('catalog-list');
+      list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">Loading...</td></tr>';
+      try {
+          const res = await fetch(API_URL + '/catalog?storeId=' + storeId);
+          if (!res.ok) throw new Error();
+          const items = await res.json();
+          if (!Array.isArray(items) || items.length === 0) {
+              list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-sm">No products found</td></tr>';
+              return;
+          }
+          list.innerHTML = items.map(i => `
+              <tr class="hover:bg-black/20">
+                  <td class="p-4 text-sm font-mono text-slate-400">${i.barcode}</td>
+                  <td class="p-4 text-sm font-medium text-slate-200">${i.name}</td>
+                  <td class="p-4 text-sm font-mono font-semibold text-success">$${i.price}</td>
+                  <td class="p-4 text-sm text-slate-400">${i.stock}</td>
+                  <td class="p-4">
+                    <button onclick="deleteProduct('${i.barcode}')" class="text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition">Delete</button>
+                  </td>
+              </tr>
+          `).join('');
+      } catch(e) { 
+          list.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500 text-sm">Network error</td></tr>';
+      }
+  }
+
+  async function deleteProduct(barcode) {
+      if(!confirm("Are you sure you want to delete this product?")) return;
+      try {
+          const storeId = document.getElementById('store-id').value.trim();
+          await fetch(API_URL + '/catalog?storeId=' + storeId + '&barcode=' + barcode, { method: 'DELETE' });
+          loadCatalog();
+      } catch(e) { console.error("Error deleting product:", e); }
+  }
+
+  async function loadDevices() {
+      const list = document.getElementById('devices-list');
+      list.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 text-sm">Loading...</td></tr>';
+      try {
+          const res = await fetch(API_URL + '/devices');
+          if (!res.ok) throw new Error();
+          const items = await res.json();
+          if (!Array.isArray(items) || items.length === 0) {
+              list.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 text-sm">No active devices</td></tr>';
+              return;
+          }
+          list.innerHTML = items.map(i => `
+              <tr class="hover:bg-black/20">
+                  <td class="p-4 text-sm font-mono text-primary font-medium">${i.device_id}</td>
+                  <td class="p-4"><span class="bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md text-xs font-medium border border-white/5">${i.type}</span></td>
+                  <td class="p-4 text-sm text-slate-400">${i.last_seen}</td>
+              </tr>
+          `).join('');
+      } catch(e) { 
+          list.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500 text-sm">Network error</td></tr>';
+      }
+  }
+
+  let prevCarts = "";
+  async function loadCarts() {
+      try {
+          const res = await fetch(API_URL + '/live-carts');
+          const items = await res.ok ? await res.json() : [];
+          const list = document.getElementById('carts-list');
+          const count = document.getElementById('cart-count');
+          
+          if (!Array.isArray(items) || items.length === 0) {
+              list.innerHTML = '<div class="flex h-full items-center justify-center text-slate-400 text-sm font-medium">No active carts at the moment...</div>';
+              count.innerText = '0';
+              return;
+          }
+          count.innerText = items.length;
+          
+          const newCartsHtml = items.map(i => `
+              <div class="flex items-center justify-between p-4 mb-3 bg-black/40 border border-white/5 rounded-lg shadow-sm hover:border-indigo-300 transition-colors gap-4">
+                  <div class="flex items-center space-x-4 min-w-0 flex-1">
+                    <div class="bg-cyan-900/30 text-primary w-10 h-10 rounded-lg flex items-center justify-center font-bold font-mono text-sm border border-cyan-800 shrink-0">
+                      ${i.quantity}x
                     </div>
-                    `;
-                }).join('');
-                
-            } catch (err) {
-                list.innerHTML = '<div class="col-span-full text-red-600 text-center py-8 font-bold uppercase border-2 border-red-600 bg-red-50">Error loading history.</div>';
-            }
-        }
-    </script>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-semibold text-slate-200 text-sm truncate" title="${i.name}">${i.name}</div>
+                        <div class="text-xs text-slate-400 font-mono mt-0.5 truncate" title="DEV: ${i.device_id}">DEV: ${i.device_id}</div>
+                    </div>
+                  </div>
+                  <div class="text-success font-bold font-mono text-lg shrink-0">
+                    $${(i.price * i.quantity).toFixed(2)}
+                  </div>
+              </div>
+          `).join('');
+
+          if (newCartsHtml !== prevCarts) {
+              list.innerHTML = newCartsHtml;
+              prevCarts = newCartsHtml;
+              // Flash the scanner if there is an update to simulate live scan
+              const scanner = document.getElementById('scanner-display');
+              scanner.classList.add('flash');
+              setTimeout(() => scanner.classList.remove('flash'), 300);
+          }
+
+      } catch(e) { 
+          console.error("Error polling carts:", e); 
+      }
+  }
+
+  // Start polling for live carts every 3 seconds
+  setInterval(loadCarts, 3000);
+  // Initial loads
+  loadCarts();
+  loadDevices();
+</script>
 </body>
 </html>

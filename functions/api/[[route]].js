@@ -4,7 +4,7 @@ export async function onRequest(context) {
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     };
 
@@ -24,6 +24,14 @@ export async function onRequest(context) {
           return new Response("Bad Request", { status: 400, headers: corsHeaders });
       }
 
+      // PRODUCT CRUD
+      if (request.method === "GET" && url.pathname === "/api/admin/catalog") {
+          const storeId = url.searchParams.get("storeId");
+          if (!storeId) return new Response(JSON.stringify({ error: "Missing storeId" }), { status: 400, headers: corsHeaders });
+          const { results } = await env.DB.prepare("SELECT * FROM products WHERE store_id = ?").bind(storeId).all();
+          return new Response(JSON.stringify(results), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       if (request.method === "POST" && url.pathname === "/api/admin/catalog") {
           const body = await request.json();
           if (body.storeId && body.barcode && body.name && body.price !== undefined && body.stock !== undefined) {
@@ -33,15 +41,50 @@ export async function onRequest(context) {
           }
           return new Response("Bad Request", { status: 400, headers: corsHeaders });
       }
+      
+      if (request.method === "DELETE" && url.pathname === "/api/admin/catalog") {
+          const storeId = url.searchParams.get("storeId");
+          const barcode = url.searchParams.get("barcode");
+          if (storeId && barcode) {
+              await env.DB.prepare("DELETE FROM products WHERE store_id = ? AND barcode = ?").bind(storeId, barcode).run();
+              return new Response(JSON.stringify({ status: "success" }), { headers: corsHeaders });
+          }
+          return new Response("Bad Request", { status: 400, headers: corsHeaders });
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/admin/devices") {
+          const { results: devices } = await env.DB.prepare("SELECT * FROM devices").all();
+          return new Response(JSON.stringify(devices), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/admin/live-carts") {
+          const { results: carts } = await env.DB.prepare("SELECT * FROM carts").all();
+          return new Response(JSON.stringify(carts), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
 
       // ==========================================
-      // CART API (D1 SQL)
+      // DEVICE & CART API (D1 SQL)
       // ==========================================
-      if (request.method === "GET" && url.pathname === "/api/cart") {
-        const deviceId = url.searchParams.get("deviceId");
+      if (request.method === "POST" && url.pathname === "/api/device/register") {
+          const body = await request.json();
+          const deviceId = body.deviceId;
+          const type = body.type || "unknown";
+          if (!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
+          
+          await env.DB.prepare("INSERT INTO devices (device_id, type) VALUES (?, ?) ON CONFLICT(device_id) DO UPDATE SET last_seen = CURRENT_TIMESTAMP")
+              .bind(deviceId, type).run();
+          return new Response(JSON.stringify({ status: "success" }), { headers: corsHeaders });
+      }
+
+      // Handle both GET /api/cart?deviceId=... and GET /api/cart/{deviceId}
+      if (request.method === "GET" && (url.pathname === "/api/cart" || url.pathname.startsWith("/api/cart/"))) {
+        let deviceId = url.searchParams.get("deviceId");
+        if (!deviceId && url.pathname.startsWith("/api/cart/")) {
+            deviceId = url.pathname.replace("/api/cart/", "");
+        }
         if(!deviceId) return new Response(JSON.stringify({ error: "Missing deviceId" }), { status: 400, headers: corsHeaders });
 
-        const { results: cartItems } = await env.DB.prepare("SELECT barcode, name, price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
+        const { results: cartItems } = await env.DB.prepare("SELECT id, barcode, name, price, quantity FROM carts WHERE device_id = ?").bind(deviceId).all();
         let total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         return new Response(JSON.stringify({ items: cartItems, total: total }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -52,8 +95,9 @@ export async function onRequest(context) {
         const deviceId = body.deviceId;
         
         if(!deviceId || !barcode) return new Response(JSON.stringify({ error: "Missing payload" }), { status: 400, headers: corsHeaders });
+        
+        await env.DB.prepare("INSERT INTO devices (device_id, type) VALUES (?, 'display') ON CONFLICT(device_id) DO UPDATE SET last_seen = CURRENT_TIMESTAMP").bind(deviceId).run();
 
-        // --- STORE CHECK-IN LOGIC ---
         if (barcode.startsWith("STORE-CHECKIN-")) {
             const remainder = barcode.replace("STORE-CHECKIN-", "");
             const newStoreId = remainder.split("-")[0];
@@ -62,20 +106,17 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ status: "success", productName: `Checked into ${newStoreId}`, price: "0.00", cartTotal: 0 }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
-        // --- MULTI-STORE ROUTING ---
         const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
         if (!session) {
             return new Response(JSON.stringify({ status: "error", error: "Please scan a Store Check-In Barcode first!" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
         const storeId = session.store_id;
 
-        // Lookup product in D1
         let product = await env.DB.prepare("SELECT name, price, stock FROM products WHERE barcode = ? AND store_id = ?").bind(barcode, storeId).first();
         if (product && product.stock <= 0) {
             return new Response(JSON.stringify({ status: "error", error: "Product out of stock" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
         
-        // Global UPC Fallback
         if (!product) {
             let globalName = "Unknown Product";
             try {
@@ -93,7 +134,6 @@ export async function onRequest(context) {
             }
         }
 
-        // Add Product to D1 Cart
         const existing = await env.DB.prepare("SELECT id, quantity FROM carts WHERE device_id = ? AND barcode = ?").bind(deviceId, barcode).first();
         if (existing) {
             await env.DB.prepare("UPDATE carts SET quantity = quantity + 1 WHERE id = ?").bind(existing.id).run();
@@ -107,6 +147,24 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ status: "success", productName: product.name, price: product.price ? product.price.toFixed(2) : "0.00", cartTotal: total }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      if (request.method === "POST" && url.pathname === "/api/cart/update") {
+          const body = await request.json();
+          const { cartId, quantity, deviceId } = body;
+          if (!cartId || quantity === undefined) return new Response(JSON.stringify({ error: "Missing payload" }), { status: 400, headers: corsHeaders });
+          
+          await env.DB.prepare("UPDATE carts SET quantity = ? WHERE id = ?").bind(quantity, cartId).run();
+          return new Response(JSON.stringify({ status: "success" }), { headers: corsHeaders });
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/cart/remove") {
+          const body = await request.json();
+          const { cartId, deviceId } = body;
+          if (!cartId) return new Response(JSON.stringify({ error: "Missing cartId" }), { status: 400, headers: corsHeaders });
+          
+          await env.DB.prepare("DELETE FROM carts WHERE id = ?").bind(cartId).run();
+          return new Response(JSON.stringify({ status: "success" }), { headers: corsHeaders });
+      }
+
       if (request.method === "POST" && url.pathname === "/api/cart/create-checkout-session") {
         const body = await request.json();
         const deviceId = body.deviceId;
@@ -117,7 +175,6 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ error: "Cart is empty" }), { status: 400, headers: corsHeaders });
         }
 
-        // --- MULTI-STORE STRIPE PAYMENTS ---
         const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
         if (!session) {
             return new Response(JSON.stringify({ error: "No active store session. Please scan a Store Check-In barcode." }), { status: 400, headers: corsHeaders });
@@ -166,33 +223,26 @@ export async function onRequest(context) {
         if (cartItems.length > 0) {
             let total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
             
-            // Get store_id
             const session = await env.DB.prepare("SELECT store_id FROM active_sessions WHERE device_id = ?").bind(deviceId).first();
             const storeId = session ? session.store_id : "unknown";
 
-            // Save order history
-            const { meta } = await env.DB.prepare("INSERT INTO order_history (device_id, store_id, total) VALUES (?, ?, ?)")
+            await env.DB.prepare("INSERT INTO order_history (device_id, store_id, total) VALUES (?, ?, ?)")
                                          .bind(deviceId, storeId, total).run();
             
-            // Note: Since D1 doesn't easily return last_insert_rowid in a single run() via JS binding without batching,
-            // and because SQLite's last_insert_rowid() is connection specific, we'll fetch the latest ID.
             const lastOrder = await env.DB.prepare("SELECT id FROM order_history WHERE device_id = ? ORDER BY id DESC LIMIT 1").bind(deviceId).first();
             const orderId = lastOrder.id;
 
             for (const item of cartItems) {
                 await env.DB.prepare("INSERT INTO order_items (order_id, name, price, quantity) VALUES (?, ?, ?, ?)").bind(orderId, item.name, item.price, item.quantity).run();
-                // Decrement stock for the sold product
                 await env.DB.prepare("UPDATE products SET stock = stock - ? WHERE barcode = ? AND store_id = ?").bind(item.quantity, item.barcode, storeId).run();
             }
 
-            // Finally, clear the cart
             await env.DB.prepare("DELETE FROM carts WHERE device_id = ?").bind(deviceId).run();
         }
         
         return new Response(JSON.stringify({ status: "success" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Add API endpoint to fetch history so history.html works!
       if (request.method === "POST" && url.pathname === "/api/band/pair") {
         const body = await request.json();
         if(!body.deviceId) return new Response("Missing deviceId", { status: 400, headers: corsHeaders });

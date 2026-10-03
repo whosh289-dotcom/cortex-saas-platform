@@ -47,3 +47,10 @@ CREATE TABLE order_items (
     quantity INTEGER,
     FOREIGN KEY(order_id) REFERENCES order_history(id)
 );
+
+DROP TABLE IF EXISTS devices;
+CREATE TABLE devices (
+    device_id TEXT PRIMARY KEY,
+    type TEXT,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+);
